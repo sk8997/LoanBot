@@ -258,10 +258,7 @@ training set. Moreover, the mode of the capital-gains varibale is zero and this
 data is not readily avalobale in a real-world applications.  
     
     
-    
-git rm --cached salary_model.sav
-git commit --amend -CHEAD
-git push   
+
     
     
     
