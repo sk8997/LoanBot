@@ -30,19 +30,25 @@ salary: <=50K or >50K
 """
 
 # TODO Use os to detect the filepath for all datasets and remove hardcoded paths
+# TODO EDA
 
 # %% 
 """
-0) Importing relevant libraries and setting global  variables
+0) Importing relevant libraries and set global variables
 
 """
 
 
-
+import pickle
 import typing 
 import numpy as np
 import pandas as pd
-import re
+import matplotlib.pyplot as plt
+import seaborn as sns
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import LabelEncoder
 
 data_name: str = "C:\Projects\Salary_Prediction\salary.csv"
 
@@ -89,7 +95,7 @@ salary_data.isnull().values.any()
 
 
 # No NaN's, but quick visual inspection of the dataframe shown that there are some
-# rows with "?" when no entries are avaliable for this unit. So we will replace them with the most common value in respective column
+# rows with "?" when no entries are avaliable for this unit. So we will replace them with the most common value in each respective column
 
 """
 Replacing "?" 
@@ -113,11 +119,11 @@ print(' ?' in salary_data.values) # Check if there are any question marks left i
 # %%
 
 """
-Removing redundant dimensions (fnlwgt, education, relationship)
+Removing redundant dimensions (fnlwgt, education, relationship, capital-loss)
 
 """
 
-salary_data.drop(["education", "fnlwgt", "relationship"], axis = 1, inplace = True)
+salary_data.drop(["education", "fnlwgt", "relationship", "capital-loss"], axis = 1, inplace = True)
     
 # %%
 
@@ -175,5 +181,105 @@ for country in range(0, len(developed_countries)):
 
 salary_data["native-country"] = np.where(salary_data["native-country"].isin(developed_countries), "developed", "developing")
 
+# %%
 
+"""
+4) Fit the model
+    
+"""
+
+# Change categorical values 
+
+salary_data = salary_data.apply(LabelEncoder().fit_transform)
+salary_data.sample(10)
+
+# Separate predictor and outcome varibales
+
+X = salary_data.drop("salary", axis = 1, inplace=False)
+Y = salary_data["salary"]
+
+# Split predictor and outcome into test and train subsets (70/30)
+
+seed = 573 # random state for the split
+
+X_train, X_test, y_train, y_test = train_test_split(X, Y, test_size = 0.3, random_state = seed)
+
+# Fitting the model 
+
+numTrees = 10000
+clf = RandomForestClassifier(n_estimators = numTrees).fit(X_train,y_train) #bagging 10,000 trees
+
+# Predict outcomes and calculate the accuracy score
+
+predictions = clf.predict(X_test) # Predicted Y
+accuracy_score(y_test, predictions) # Accuracy of the model 
+
+# Print summary of the model 
+
+print(classification_report(y_test, predictions))
+
+# plot predicted vs actual outcomes (confusion matrix) 
+
+conf_matrix = confusion_matrix(y_test, predictions)
+sns.heatmap(conf_matrix)
+
+
+# Save the model  as .sav
+filename = "salary_model.sav"
+
+pickle.dump(clf, open(filename, "wb"))
+
+
+
+# %%
+
+"""
+5) Report
+
+    
+    
+...
+
+
+
+
+Random forest calssification shows good results. The reported precision and recall
+are 67% and 60% respectively. The correspoding F1 score is 0.63 and the total
+accuracy is 0.84. Given that this dataset was unbalansed these results can be 
+considered satisfactory. The 84% accuracy also suggests that the model is
+unbiased. Confusion matrix shows that both false positive and false negative 
+rates are extrimely low. Please note that low frequency of correct prediction 
+on the CM heatmap is also due to the fact that the dataset is unbalannced. Overall
+the model shows satisfactory performance.
+
+Other considerations: As shown in EDA, a lion share of varibales are unbalansed 
+this will likely make the model less accurate for low-occuring values in the 
+training set. Moreover, the mode of the capital-gains varibale is zero and this
+data is not readily avalobale in a real-world applications.  
+    
+    
+    
+git rm --cached salary_model.sav
+git commit --amend -CHEAD
+git push   
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+"""
 
