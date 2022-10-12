@@ -31,6 +31,8 @@ salary: <=50K or >50K
 
 # TODO Use os to detect the filepath for all datasets and remove hardcoded paths
 # TODO EDA
+# TODO Read how to interpret the AUC and other values, plot AUC if possible
+# TODO add link to Kaggle dataset
 
 # %% 
 """
@@ -38,7 +40,7 @@ salary: <=50K or >50K
 
 """
 
-
+import re
 import pickle
 import typing 
 import numpy as np
@@ -46,12 +48,15 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
+from sklearn.metrics import accuracy_score, classification_report, confusion_matrix, roc_auc_score
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder
 
-data_name: str = "C:\Projects\Salary_Prediction\salary.csv"
 
+# Global Variables 
+data_name: str = "C:\Projects\Salary_Prediction\salary.csv" # name of the dataset
+seed: int = 4634  # random state for train/test split
+numTrees: int = 1000 # number of trees for boosting  
 
 
 
@@ -81,10 +86,11 @@ initial_rows: int = salary_data.shape[0]
 2) Cleaning Data
     
     * Replace missing values with the mode of each column
-    * Remove redundant dimnesions (fnlwgt, education, relationship)
+    * Remove redundant dimnesions (fnlwgt, education-num, relationship, capital-loss/gain)
     * Reduce marital-status to binary outcomes (married, not married)
     * Replace native-country value with "developing" and "developed"
     * Convert outcome varibale "salary" to numeric binary values (1, 0)
+    * Change education values with grade numbers to "Some-HS"
 
 """
 
@@ -119,11 +125,11 @@ print(' ?' in salary_data.values) # Check if there are any question marks left i
 # %%
 
 """
-Removing redundant dimensions (fnlwgt, education, relationship, capital-loss)
+Removing redundant dimensions (fnlwgt, education-num, relationship, capital-loss, capital-gain)
 
 """
 
-salary_data.drop(["education", "fnlwgt", "relationship", "capital-loss"], axis = 1, inplace = True)
+salary_data.drop(["education-num", "fnlwgt", "relationship", "capital-loss", "capital-gain"], axis = 1, inplace = True)
     
 # %%
 
@@ -181,6 +187,16 @@ for country in range(0, len(developed_countries)):
 
 salary_data["native-country"] = np.where(salary_data["native-country"].isin(developed_countries), "developed", "developing")
 
+
+# %%
+
+"""
+Change education values with grade numbers to "Some-HS"
+
+"""
+salary_data["education"] = salary_data["education"].str.replace(r'[0-9]+th', "Some-HS", regex = True) # replace with regex
+
+
 # %%
 
 """
@@ -200,19 +216,19 @@ Y = salary_data["salary"]
 
 # Split predictor and outcome into test and train subsets (70/30)
 
-seed = 573 # random state for the split
+
 
 X_train, X_test, y_train, y_test = train_test_split(X, Y, test_size = 0.3, random_state = seed)
 
 # Fitting the model 
 
-numTrees = 10000
+
 clf = RandomForestClassifier(n_estimators = numTrees).fit(X_train,y_train) #bagging 10,000 trees
 
 # Predict outcomes and calculate the accuracy score
 
 predictions = clf.predict(X_test) # Predicted Y
-accuracy_score(y_test, predictions) # Accuracy of the model 
+accuracy = accuracy_score(y_test, predictions) # Accuracy of the model 
 
 # Print summary of the model 
 
@@ -230,6 +246,17 @@ filename = "salary_model.sav"
 pickle.dump(clf, open(filename, "wb"))
 
 
+# %%
+
+"""
+Calculate Area Under the Curve (AUC)
+
+"""
+
+auc = roc_auc_score(y_test, predictions)
+
+
+
 
 # %%
 
@@ -244,7 +271,7 @@ pickle.dump(clf, open(filename, "wb"))
 
 
 Random forest calssification shows good results. The reported precision and recall
-are 67% and 60% respectively. The correspoding F1 score is 0.63 and the total
+are 61% and 60% respectively. The correspoding F1 score is 0.63 and the total
 accuracy is 0.84. Given that this dataset was unbalansed these results can be 
 considered satisfactory. The 84% accuracy also suggests that the model is
 unbiased. Confusion matrix shows that both false positive and false negative 
