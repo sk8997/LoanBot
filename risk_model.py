@@ -20,19 +20,22 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
+from scipy import stats
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score, classification_report, confusion_matrix, roc_auc_score
 from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import LabelEncoder
+from sklearn.preprocessing import LabelEncoder, StandardScaler
+from sklearn.decomposition import PCA
 from matplotlib.ticker import PercentFormatter
 
 
-file_name: str = "credit_risk_dataset.csv"
-seed: int = 4634
-numTrees: int = 1000
+file_name: str = "credit_risk_dataset.csv" # Name of the dataset
+seed: int = 4634     # Seed for the random state in Test/Train split
+numTrees: int = 1000  # How many trees are used for the Random Forest 
+test_proportion: float = 0.3  # Proportion of the test set for Test/Train split
 
-
-
+# Flag for the type of ML model. True for Rindge Regression, False for Random Forest
+ridge: bool = True
 
 # %%
 
@@ -51,6 +54,17 @@ risk_data: pd.DataFrame = pd.read_csv(file_name)
 risk_data.sample(10)
 initial_row_num: int = risk_data.shape[0]
 
+"""
+Test Train Split
+
+"""
+
+# Separate predictor and outcome variables 
+X = risk_data.drop("loan_status", inplace = False, axis = 1)
+Y = risk_data["loan_status"]
+
+# Test/train split
+X_train, X_test, y_train, y_test = train_test_split(X, Y, test_size = test_proportion, random_state = seed, shuffle = True)
 
 
 # %%
@@ -180,11 +194,36 @@ a) Logistic Regression
 a.1) Dimensionality Reduction (PCA) 
 
 Removes multicollinearity
-Will use Kaiser criterion to select important Eigen Values.
+Will use Kaiser criterion to select important Eigenvalues.
 
 """
 
-
+if (ridge):
+    
+    
+    # Change all values to numeric 
+    X = X.apply(LabelEncoder().fit_transform)
+    X.sample(10)
+    
+    # Z score data to avoid (1) offset and (2) unequal variance
+    zscored_X = stats.zscore(X)
+    
+    # Apply the PCA
+    
+    pca = PCA().fit(zscored_X)
+    
+    #Eigenvalues 
+    eig_vals = pca.explained_variance_
+    
+    # Eigenvectors (where the principla components point in terms of the original variables)
+    loadings = pca.components_
+    
+    # Transformed data. Original variables substituted with factors ordered in decreasing Eigenvalues
+    rotated_data = pca.fit_transform(zscored_X)
+    
+    # Explained variance for each factor 
+    
+    var_explained = eig_vals/sum(eig_vals)*100
 
 
 
