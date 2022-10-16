@@ -31,8 +31,9 @@ from matplotlib.ticker import PercentFormatter
 
 file_name: str = "credit_risk_dataset.csv" # Name of the dataset
 seed: int = 4634     # Seed for the random state in Test/Train split
-numTrees: int = 1000  # How many trees are used for the Random Forest 
+num_trees: int = 1000  # How many trees are used for the Random Forest 
 test_proportion: float = 0.3  # Proportion of the test set for Test/Train split
+kaiser_threshold: int = 1 # Threshold for the Kaiser criterion used to choose relevant Eigenvalues
 
 # Flag for the type of ML model. True for Rindge Regression, False for Random Forest
 ridge: bool = True
@@ -53,18 +54,7 @@ risk_data: pd.DataFrame = pd.read_csv(file_name)
 
 risk_data.sample(10)
 initial_row_num: int = risk_data.shape[0]
-
-"""
-Test Train Split
-
-"""
-
-# Separate predictor and outcome variables 
-X = risk_data.drop("loan_status", inplace = False, axis = 1)
-Y = risk_data["loan_status"]
-
-# Test/train split
-X_train, X_test, y_train, y_test = train_test_split(X, Y, test_size = test_proportion, random_state = seed, shuffle = True)
+num_columns = len(risk_data.columns)
 
 
 # %%
@@ -167,7 +157,16 @@ d) Change employement legth to binary (employed/unemployed; employed if employem
 risk_data["person_emp_length"] = np.where(risk_data["person_emp_length"] > 0, "employed", "unemployed")
 
 
+"""
+Test Train Split
 
+"""
+
+# Separate predictor and outcome variables 
+X = risk_data.drop("loan_status", inplace = False, axis = 1)
+Y = risk_data["loan_status"]
+
+num_predictor_columns = len(X.columns) # How many predictor values left after cleaning. Will need this later for the PCA
 
 
 # %% 
@@ -223,11 +222,52 @@ if (ridge):
     
     # Explained variance for each factor 
     
-    var_explained = eig_vals/sum(eig_vals)*100
+    var_explained = pca.explained_variance_ratio_ * 100
+    
+    # Get the number of Eigenvalues that are above or equal to Kaiser criterion
+    
+    def get_kaiser_number(eig_vals: np.array, kaiser_threshold: int) -> int:
+        count: int = 0
+        
+        for eig_val in eig_vals:
+            if (eig_val >= kaiser_threshold):
+                count += 1
+        return count
+    
+    principal_comp_num = get_kaiser_number(eig_vals, kaiser_threshold)
+    
+    
+    # Scree plot (bar graph of the sorted Eigenvalues)
+    dims = np.linspace(1, num_predictor_columns, num_predictor_columns)
+    
+    plt.bar(dims, eig_vals, color ="grey")
+    plt.plot([0,num_predictor_columns],[kaiser_threshold,kaiser_threshold],color='orange')
+    plt.xlabel('Principal component')
+    plt.ylabel('Eigenvalue')
 
+    plt.annotate("Selected " + str(principal_comp_num) + " Principal Components\nTotal variance explained is:\n" 
+                 + str(round(sum(var_explained[range(0,3)]), 2)) + "%", xy = (3.3, 1.45), fontsize = 12)
+    plt.show()
+                 
+        
+    # Remove principal components that were not selected by the Kaiser criterion
+    X_pca: np.array = rotated_data[:, 0 : principal_comp_num]
+    
+# %%
 
+"""
+a.2) Model 
+    
+Ridge Regression using selected principal components from part a.1)
 
+"""
 
+if (ridge):
+    
+    # Test/train split
+    X_train_pca, X_test_pca, y_train, y_test = train_test_split(X_pca, Y, 
+                                                                test_size = test_proportion, 
+                                                                random_state = seed, shuffle = True)
 
 
 
