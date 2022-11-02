@@ -56,10 +56,13 @@ from sklearn.preprocessing import LabelEncoder
 # Global Variables 
 data_name: str = "C:\Projects\Salary_Prediction\salary.csv" # name of the dataset
 seed: int = 4634  # random state for train/test split
-numTrees: int = 1000 # number of trees for boosting  
+num_trees: int = 1000 # number of trees for boosting  
+test_proportion: float = 0.3 # Proportion of the test set for Test/Train split
 
 
+# Flags
 
+save_as_sav: bool = False
 
 
 # %%
@@ -218,12 +221,12 @@ Y = salary_data["salary"]
 
 
 
-X_train, X_test, y_train, y_test = train_test_split(X, Y, test_size = 0.3, random_state = seed)
+X_train, X_test, y_train, y_test = train_test_split(X, Y, test_size = test_proportion, random_state = seed)
 
 # Fitting the model 
 
 
-clf = RandomForestClassifier(n_estimators = numTrees).fit(X_train,y_train) #bagging 10,000 trees
+clf = RandomForestClassifier(n_estimators = num_trees).fit(X_train,y_train) #bagging 10,000 trees
 
 # Predict outcomes and calculate the accuracy score
 
@@ -241,9 +244,11 @@ sns.heatmap(conf_matrix)
 
 
 # Save the model  as .sav
-filename = "salary_model.sav"
 
-pickle.dump(clf, open(filename, "wb"))
+if (save_as_sav):
+    filename = "salary_model.sav"
+    
+    pickle.dump(clf, open(filename, "wb"))
 
 
 # %%

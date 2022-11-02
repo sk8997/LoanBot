@@ -24,19 +24,26 @@ from scipy import stats
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score, classification_report, confusion_matrix, roc_auc_score
 from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LogisticRegression
 from sklearn.preprocessing import LabelEncoder, StandardScaler
 from sklearn.decomposition import PCA
 from matplotlib.ticker import PercentFormatter
 
-
+# Global values
 file_name: str = "credit_risk_dataset.csv" # Name of the dataset
 seed: int = 4634     # Seed for the random state in Test/Train split
 num_trees: int = 1000  # How many trees are used for the Random Forest 
 test_proportion: float = 0.3  # Proportion of the test set for Test/Train split
 kaiser_threshold: int = 1 # Threshold for the Kaiser criterion used to choose relevant Eigenvalues
+variance_threshold: float = 1.00 # Threshold for the n% criterion used to choose relevant Eigenvalues. 100% by default
 
-# Flag for the type of ML model. True for Rindge Regression, False for Random Forest
-ridge: bool = True
+# Flags
+ridge: bool = True # Flag for the type of ML model. True for Rindge Regression, False for Random Forest.
+kaiser: bool = False # Flag for the type of Eigenvalue selection. Either Kaiser or n%.
+save_as_sav: bool = False # Save model as a .sav file 
+
+
+# TODO os, descriptives dataframe, report
 
 # %%
 
@@ -157,11 +164,6 @@ d) Change employement legth to binary (employed/unemployed; employed if employem
 risk_data["person_emp_length"] = np.where(risk_data["person_emp_length"] > 0, "employed", "unemployed")
 
 
-"""
-Test Train Split
-
-"""
-
 # Separate predictor and outcome variables 
 X = risk_data.drop("loan_status", inplace = False, axis = 1)
 Y = risk_data["loan_status"]
@@ -193,7 +195,7 @@ a) Logistic Regression
 a.1) Dimensionality Reduction (PCA) 
 
 Removes multicollinearity
-Will use Kaiser criterion to select important Eigenvalues.
+Will use Kaiser criterion or n% of the variance explained to select important Eigenvalues.
 
 """
 
@@ -225,7 +227,6 @@ if (ridge):
     var_explained = pca.explained_variance_ratio_ * 100
     
     # Get the number of Eigenvalues that are above or equal to Kaiser criterion
-    
     def get_kaiser_number(eig_vals: np.array, kaiser_threshold: int) -> int:
         count: int = 0
         
@@ -234,7 +235,27 @@ if (ridge):
                 count += 1
         return count
     
-    principal_comp_num = get_kaiser_number(eig_vals, kaiser_threshold)
+    # Get the number of Eigenvalues that are above or equal to n% criterion
+    def get_n_percent_number(var_explained: np.array, variance_threshold: int) -> int:
+        count: int = 1
+        total_var: int = 0
+        
+        for eig_val in var_explained:
+            total_var += eig_val
+            
+            if (total_var >= variance_threshold * 100):
+                return count
+            count += 1
+            
+        return count
+        
+            
+        
+    # How many principal components to select
+    if (kaiser):
+        principal_comp_num: int = get_kaiser_number(eig_vals, kaiser_threshold)
+    else:
+        principal_comp_num: int = get_n_percent_number(var_explained, variance_threshold)
     
     
     # Scree plot (bar graph of the sorted Eigenvalues)
@@ -246,11 +267,11 @@ if (ridge):
     plt.ylabel('Eigenvalue')
 
     plt.annotate("Selected " + str(principal_comp_num) + " Principal Components\nTotal variance explained is:\n" 
-                 + str(round(sum(var_explained[range(0,3)]), 2)) + "%", xy = (3.3, 1.45), fontsize = 12)
+                 + str(round(sum(var_explained[range(0,principal_comp_num)]), 2)) + "%", xy = (3.3, 1.45), fontsize = 12)
     plt.show()
                  
         
-    # Remove principal components that were not selected by the Kaiser criterion
+    # Remove principal components that were not selected by the Kaiser/User criterion
     X_pca: np.array = rotated_data[:, 0 : principal_comp_num]
     
 # %%
@@ -260,6 +281,9 @@ a.2) Model
     
 Ridge Regression using selected principal components from part a.1)
 
+Will use final classification results to asses model accuracy but we are interested 
+in probabilities of defaulting
+
 """
 
 if (ridge):
@@ -268,12 +292,44 @@ if (ridge):
     X_train_pca, X_test_pca, y_train, y_test = train_test_split(X_pca, Y, 
                                                                 test_size = test_proportion, 
                                                                 random_state = seed, shuffle = True)
+    
+    # Fit the model
+    clf = LogisticRegression().fit(X_train_pca, y_train)
+    
+    # Get probability for each prediction
+    predictions_probability = clf.predict_proba(X_test_pca)
+
+    # Make Predictions 
+    predictions_final = clf.predict(X_test_pca)
+    
+    # Measure accuracy
+    
+    accuracy = accuracy_score(y_test, predictions_final)
+    
+    # Summary of the model
+    print(classification_report(y_test, predictions_final))
+    
+    # Confusion matrix
+    conf_matrix = confusion_matrix(y_test, predictions_final)
+    sns.heatmap(conf_matrix)
+    
+    # AUC
+    auc = roc_auc_score(y_test, predictions_final)
 
 
+# %%
+
+"""
+Save this model as .sav
+
+"""
 
 
+if (save_as_sav):
+    
+    filename = "risk_model.sav"
 
-
+    pickle.dump(clf, open(filename, "wb"))
 
 
 
