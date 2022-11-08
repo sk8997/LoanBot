@@ -8,7 +8,29 @@ class LoanDatabase(object):
 
     """
 
-    db_name = "loan" # Default name for the database
+    db_name: str = "loan_database" # Default name for the database
+    __table_values: str = """
+    id VARCHAR(20) PRIMARY KEY,
+    name VARCHAR(60) NOT NULL,
+    age INT NOT NULL,
+    sex VARCHAR(20) NOT NULL,
+    employed INT,
+    workclass VARCHAR(40),
+    education VARCHAR(40),
+    marrital_status INT,
+    occupation VARCHAR(60),
+    race VARCHAR(20),
+    hours_per_week INT,
+    native_country INT,
+    income INT,
+    person_home_ownership VARCHAR(40),
+    loan_grade VARCHAR(3),
+    loan_amount INT,
+    loan_percent_income FLOAT,
+    cb_person_default_on_file INT,
+    loan_status INT,
+    notes VARCHAR(500)
+    """ 
 
     def __init__(self, user_name: str, host_name: str, password: str) -> None:
         """Database constructor
@@ -26,12 +48,16 @@ class LoanDatabase(object):
         # Establish first connection and create a database
         self.set_connection()
         self.create_database()
+
+        # Create an empty table
+        self.set_connection(LoanDatabase.db_name) 
+        self.execute_query(f"CREATE TABLE IF NOT EXISTS loan ({LoanDatabase.__table_values});")
  
     def set_connection(self, db_name: str = None) -> None:
         """Establish connection to MySQL Server
 
         Args:
-            db_name (str): Name of our database
+            db_name (str): Database name. Use to establish connection directly to specific database
         """
         self.connection = None
         try: 

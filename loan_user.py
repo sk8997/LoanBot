@@ -1,5 +1,5 @@
 import pandas as pd
-from LoanDatabase import *
+from loan_database import *
 
 class Person(object):
     """
@@ -19,9 +19,10 @@ class Person(object):
             gender (str): biological gender of the user. M/F
             race (str): race of the user
         """
+
         self.name = name
         self.age = age
-        
+
         Person.person_number += 1
 
 
@@ -33,7 +34,24 @@ class LoanUser(Person):
         Person (class)
     """
 
-    __column_names: list = []
+    def __init__(self, name: str, age: int) -> None:
+        super().__init__(name, age)
+
+        # Create user dataframe
+        self.generate_user_dataframe()
+        self.get_id()
+
+        # Assign name and age to dataframe
+        self.user_data["id"] = self.user_id
+        self.user_data["name"] = self.name
+        self.user_data["age"] = self.age
+
+    __column_names: list = [
+        "id", "name", "age", "sex", "employed", "workclass", "education",
+        "marrital_status", "occupation", "race", "hours_per_week", "native_country",
+        "income", "person_home_ownership", "loan_grade", "loan_amount", "loan_percent_income",
+        "cb_person_default_on_file", "loan_status", "notes"
+        ]
     
 
     def get_id(self) -> None:
@@ -65,7 +83,7 @@ class LoanUser(Person):
 
         user_id = str(self.user_id)
 
-        if (db.execute_query(f"SELECT count(*) FROM loan WHERE id = {user_id}") == 0):
+        if (db.execute_query(f"SELECT count(*) AS num_user FROM loan WHERE id = {user_id}") == 0):
 
             try:
                 self.user_data.to_sql(con = db.connection, name = LoanDatabase.db_name, if_exists = 'append')
