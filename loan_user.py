@@ -69,9 +69,21 @@ class LoanUser(Person):
         """
         self.user_data: pd.DataFrame = pd.DataFrame(columns = LoanUser.__column_names )
 
+    def is_in_table(self, db: LoanDatabase) -> bool:
+        """Determines whether an entry already exists for this user. Checks for unique user id in loan table
+
+        Args:
+            db (LoanDatabase): loan database object
+
+        Returns:
+            bool: True if entry for this user already exists in this database. False otherwise
+        """
+        result = (db.read_query(f"SELECT count(*) FROM {LoanDatabase.table_name} WHERE id = '{self.user_id}'"))[0][0] != 0
+        return result
+
     def dump_data_to_sql(self, db: LoanDatabase) -> int:
         """Upload user dataframe to MySQL Server. Uploads entire data that has been collected from the user. 
-        This method will replace any data of the user if previously inserted with this new values. To insert specific
+        This method will replace any data if previously inserted with new values. To insert specific
         values use: .update_user_data() method instead.
 
         Args:
@@ -80,10 +92,8 @@ class LoanUser(Person):
         Returns:
             int: 1 if data has been uploaded successfully; 0 otherwise
         """
-
-        user_id = str(self.user_id)
-
-        if (db.execute_query(f"SELECT count(*) AS num_user FROM loan WHERE id = {user_id}") == 0):
+             
+        if (not self.is_in_table(db)):
 
             try:
                 self.user_data.to_sql(con = db.connection, name = LoanDatabase.db_name, if_exists = 'append')
@@ -91,12 +101,13 @@ class LoanUser(Person):
                 try:
                     self.generate_user_dataframe()
                     self.user_data.to_sql(con = db.connection, name = LoanDatabase.db_name, if_exists = 'append')
-                except Exception:
+                except Exception as ex:
+                    print(f"Couldn't dump data: Error: '{ex}'")
                     return 0
             return 1
 
         else:
-            db.execute_query(f"DELETE FROM {LoanDatabase.db_name} WHERE id == {self.user_id}")
+            db.execute_query(f"DELETE FROM {LoanDatabase.table_name} WHERE id = '{self.user_id}'")
             self.dump_data_to_sql(db)
     
     def get_user_data(self, db: LoanDatabase) -> pd.DataFrame:

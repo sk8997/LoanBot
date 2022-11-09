@@ -9,6 +9,7 @@ class LoanDatabase(object):
     """
 
     db_name: str = "loan_database" # Default name for the database
+    table_name: str = "loan" # Default name for the table 
     __table_values: str = """
     id VARCHAR(20) PRIMARY KEY,
     name VARCHAR(60) NOT NULL,
@@ -51,7 +52,7 @@ class LoanDatabase(object):
 
         # Create an empty table
         self.set_connection(LoanDatabase.db_name) 
-        self.execute_query(f"CREATE TABLE IF NOT EXISTS loan ({LoanDatabase.__table_values});")
+        self.execute_query(f"CREATE TABLE IF NOT EXISTS {LoanDatabase.table_name} ({LoanDatabase.__table_values});")
  
     def set_connection(self, db_name: str = None) -> None:
         """Establish connection to MySQL Server
@@ -77,7 +78,7 @@ class LoanDatabase(object):
 
         """
         try:
-            cursor = (self.connection).cursor()
+            cursor = (self.connection).cursor(buffered = True)
             cursor.execute("CREATE DATABASE IF NOT EXISTS " + LoanDatabase.db_name)
         except Error as err:
              raise Exception(f"Couldn't create database. Error: {err}")
@@ -90,11 +91,35 @@ class LoanDatabase(object):
         """
 
         try:
-            cursor = (self.connection).cursor()
+            cursor = (self.connection).cursor(buffered = True)
             cursor.execute(query)
             (self.connection).commit()
         except Error as err:
-            raise Exception(f"Couldn't execute this query. Error: {err}")
+            raise Exception(f"Couldn't execute this query '{query}'. Error: {err}")
+
+    def read_query(self, query: str) -> str:
+        """Read from MySQL Server. Used to fetch data from the server 
+
+        Args:
+            query (str): MySQL query to be executed on a server
+
+        Raises:
+            Exception: For all instances when query execution failed. A more specific description of the error is given by mysql package
+
+        Returns:
+            str: Values returned by the Server after executing the query
+        """
+
+        try:
+            cursor = (self.connection).cursor(buffered = True)
+            cursor.execute(query)
+            read = cursor.fetchall()
+
+            return read
+        except Error as err:
+            raise Exception(f"Couldn't read query '{query}'from the table. Error: {err}")
+
+
 
 
 
