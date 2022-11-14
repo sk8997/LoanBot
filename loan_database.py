@@ -1,5 +1,7 @@
 import mysql.connector
 import pandas as pd
+import pymysql
+from sqlalchemy import create_engine
 from mysql.connector import Error
 
 class LoanDatabase(object):
@@ -9,29 +11,7 @@ class LoanDatabase(object):
     """
 
     db_name: str = "loan_database" # Default name for the database
-    table_name: str = "loan" # Default name for the table 
-    __table_values: str = """
-    id VARCHAR(20) PRIMARY KEY,
-    name VARCHAR(60) NOT NULL,
-    age INT NOT NULL,
-    sex VARCHAR(20) NOT NULL,
-    employed INT,
-    workclass VARCHAR(40),
-    education VARCHAR(40),
-    marrital_status INT,
-    occupation VARCHAR(60),
-    race VARCHAR(20),
-    hours_per_week INT,
-    native_country INT,
-    income INT,
-    person_home_ownership VARCHAR(40),
-    loan_grade VARCHAR(3),
-    loan_amount INT,
-    loan_percent_income FLOAT,
-    cb_person_default_on_file INT,
-    loan_status INT,
-    notes VARCHAR(500)
-    """ 
+    table_name: str = "loan_table" # Default name for the table 
 
     def __init__(self, user_name: str, host_name: str, password: str) -> None:
         """Database constructor
@@ -46,13 +26,14 @@ class LoanDatabase(object):
         self.host_name = host_name
         self.password = password
 
-        # Establish first connection and create a database
+        # Establish first connection and create a database + engine
         self.set_connection()
         self.create_database()
+        self.create_engine()
 
-        # Create an empty table
+        # Set connection to newly created database
         self.set_connection(LoanDatabase.db_name) 
-        self.execute_query(f"CREATE TABLE IF NOT EXISTS {LoanDatabase.table_name} ({LoanDatabase.__table_values});")
+        
  
     def set_connection(self, db_name: str = None) -> None:
         """Establish connection to MySQL Server
@@ -82,6 +63,24 @@ class LoanDatabase(object):
             cursor.execute("CREATE DATABASE IF NOT EXISTS " + LoanDatabase.db_name)
         except Error as err:
              raise Exception(f"Couldn't create database. Error: {err}")
+
+    def create_engine(self) -> None:
+        """Create sqlalchemy connection engine. This method uses mysql as a dialect and pymysql as a driver. Please refer to sqlachemy Database URL format: dialect+driver://username:password@host:port/database.
+        This method is used to establish pandas friendly connection to MySQL server databse. Please refer to .to_sql method in pandas library
+
+        Raises:
+            Exception: Value errors. Mostly if username/password/host are incorrect
+        """
+
+        params: str = f"mysql+pymysql://{self.user_name}:{self.password}@{self.host_name}/{LoanDatabase.db_name}"
+
+        try:
+            engine = create_engine(params)
+            self.engine = engine
+        except Exception as ex:
+            raise Exception(f"Couldn't create engine with parameters {params}: Error: {ex}")
+
+
 
     def execute_query(self, query: str) -> None:
         """Execute MySQL query. Used to interact with MySQL Community Server Database. 

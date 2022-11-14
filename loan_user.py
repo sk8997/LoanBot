@@ -32,29 +32,32 @@ class LoanUser(Person):
 
     Extends:
         Person (class)
+
     """
+
+    __column_names: list = [
+            "id", "name", "age", "sex", "employed", "workclass", "education",
+            "marrital_status", "occupation", "race", "hours_per_week", "native_country",
+            "income", "person_home_ownership", "loan_grade", "loan_amount", "loan_percent_income",
+            "cb_person_default_on_file", "loan_status", "notes"
+            ]
+
 
     def __init__(self, name: str, age: int) -> None:
         super().__init__(name, age)
 
         # Create user dataframe
-        self.generate_user_dataframe()
-        self.get_id()
+        self.__generate_user_dataframe()
+        self.__get_id()
 
         # Assign name and age to dataframe
-        self.user_data["id"] = self.user_id
-        self.user_data["name"] = self.name
-        self.user_data["age"] = self.age
+        (self.user_data).loc[0, "id"] = self.user_id
+        (self.user_data).loc[0, "name"] = self.name
+        (self.user_data).loc[0, "age"] = self.age
 
-    __column_names: list = [
-        "id", "name", "age", "sex", "employed", "workclass", "education",
-        "marrital_status", "occupation", "race", "hours_per_week", "native_country",
-        "income", "person_home_ownership", "loan_grade", "loan_amount", "loan_percent_income",
-        "cb_person_default_on_file", "loan_status", "notes"
-        ]
     
 
-    def get_id(self) -> None:
+    def __get_id(self) -> None:
         """Generate a unique ID for the user. Note that this ID is not 'universaly' unique, meaning that uniqueness of this value is true only for local dataset
         """
         try:
@@ -62,14 +65,15 @@ class LoanUser(Person):
         except:
             self.user_id: str = self.name[: len(self.name)] + str(Person.person_number) + str(self.age)
 
-    def generate_user_dataframe(self) -> None:
+    def __generate_user_dataframe(self) -> None:
         """
         Create an empty pandas dataframe associated with this user
 
         """
-        self.user_data: pd.DataFrame = pd.DataFrame(columns = LoanUser.__column_names )
+        self.user_data = pd.DataFrame(columns = LoanUser.__column_names)
+        
 
-    def is_in_table(self, db: LoanDatabase) -> bool:
+    def __is_in_table(self, db: LoanDatabase) -> bool:
         """Determines whether an entry already exists for this user. Checks for unique user id in loan table
 
         Args:
@@ -78,8 +82,11 @@ class LoanUser(Person):
         Returns:
             bool: True if entry for this user already exists in this database. False otherwise
         """
-        result = (db.read_query(f"SELECT count(*) FROM {LoanDatabase.table_name} WHERE id = '{self.user_id}'"))[0][0] != 0
-        return result
+        try:
+            result = (db.read_query(f"SELECT count(*) FROM {LoanDatabase.table_name} WHERE id = '{self.user_id}'"))[0][0] != 0
+            return result
+        except:
+            return False
 
     def dump_data_to_sql(self, db: LoanDatabase) -> int:
         """Upload user dataframe to MySQL Server. Uploads entire data that has been collected from the user. 
@@ -93,14 +100,14 @@ class LoanUser(Person):
             int: 1 if data has been uploaded successfully; 0 otherwise
         """
              
-        if (not self.is_in_table(db)):
+        if (not self.__is_in_table(db)):
 
             try:
-                self.user_data.to_sql(con = db.connection, name = LoanDatabase.db_name, if_exists = 'append')
+                self.user_data.to_sql(con = db.engine, name = LoanDatabase.table_name, if_exists = 'append')
             except Exception:
                 try:
                     self.generate_user_dataframe()
-                    self.user_data.to_sql(con = db.connection, name = LoanDatabase.db_name, if_exists = 'append')
+                    self.user_data.to_sql(con = db.connection, name = LoanDatabase.table_name, if_exists = 'append')
                 except Exception as ex:
                     print(f"Couldn't dump data: Error: '{ex}'")
                     return 0
@@ -120,7 +127,7 @@ class LoanUser(Person):
             pd.DataFrame: Pandas dataframe with user data fetched from MySQL Server
         """
 
-        sql_user = pd.read_sql_query(f"SELECT * FROM {LoanDatabase.db_name} WHERE id = {self.user_id}", con = db.connection)
+        sql_user = pd.read_sql_query(f"SELECT * FROM {LoanDatabase.table_name} WHERE id = '{self.user_id}'", con = db.connection)
 
         # Check if sql_user is empty to throw exception here
 
