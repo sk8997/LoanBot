@@ -43,17 +43,20 @@ class LoanUser(Person):
             ]
 
 
-    def __init__(self, name: str, age: int) -> None:
+    def __init__(self, name: str = None, age: int = None) -> None:
         super().__init__(name, age)
 
         # Create user dataframe
         self.__generate_user_dataframe()
-        self.__get_id()
+        
 
         # Assign name and age to dataframe
-        (self.user_data).loc[0, "id"] = self.user_id
         (self.user_data).loc[0, "name"] = self.name
         (self.user_data).loc[0, "age"] = self.age
+
+        # Set interaction stage to zero. See more...
+
+        self.stage: int = 0
 
     
 
@@ -65,12 +68,32 @@ class LoanUser(Person):
         except:
             self.user_id: str = self.name[: len(self.name)] + str(Person.person_number) + str(self.age)
 
+    def is_valid_age(age: int) -> bool:
+        """Check is the age is within acceptable range
+
+        Args:
+            age (int): Age of the person
+
+        Returns:
+            bool: true if age is within acceptable range. False otherwise
+        """
+        try:
+            valid = 130 >= age >= 0
+        except Exception:
+            return False
+        return valid
+
     def __generate_user_dataframe(self) -> None:
         """
         Create an empty pandas dataframe associated with this user
 
         """
         self.user_data = pd.DataFrame(columns = LoanUser.__column_names)
+
+    def update_stage(self) -> None:
+        """Proceeds to the next stage of user interaction with LoanBot
+        """
+        self.stage += 1
         
 
     def __is_in_table(self, db: LoanDatabase) -> bool:
@@ -87,6 +110,18 @@ class LoanUser(Person):
             return result
         except:
             return False
+
+    def push_to_df(self, col_names: list, values: list) -> None:
+        """Copy specified values from LoanUser object to designated pandas DataFrame. Value index must correspond to the index of column name. 
+
+        Args:
+            col_names (list): A list of column names to which add values. Must be names of the columns. See LoanUser._generate_user_dataframe()
+            values (list): A list of value which will be added to the dataframe
+        """
+
+        for col in col_names:
+            (self.user_data).loc[0, col] = values[col_names.index(col)]
+
 
     def dump_data_to_sql(self, db: LoanDatabase) -> int:
         """Upload user dataframe to MySQL Server. Uploads entire data that has been collected from the user. 
