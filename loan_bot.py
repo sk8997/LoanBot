@@ -99,10 +99,12 @@ class LoanBot(commands.Bot):
         await message.attachments[0].save(file_name)
         
         parser = LoanApplicationParser(file_name)
-        text = parser.get_text()
+        usr_data = parser.parse()
 
-        print(text)
+        await message.channel.send(f"Splendid! Here is what I managed to learn from your application:\n{usr_data}")
         os.remove(file_name)
+
+        usr.update_stage()
 
 
         
