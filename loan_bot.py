@@ -5,6 +5,7 @@ import regex as re
 import os
 import json
 import pdfbox
+import itertools
 from requests.compat import urljoin
 from dotenv import load_dotenv
 from discord.ext import commands
@@ -90,27 +91,57 @@ class LoanBot(commands.Bot):
                 usr.update_stage() # proceed to next stage
         else:
             await message.channel.send("Sorry, I don't think this is a valid amount. Please make sure that you enter a valid number without '$'")
+
+    def __get_info_message(self, usr_data: dict) -> str:
+        """Generates a string equivalent of a dictionary with user data in it
+
+        Args:
+            usr_data (dict): user data from parsing loan application
+
+        Returns:
+            str: string version of user data
+        """
+
+        result = ""
+        columns: list = ["Gender", "Race", "Employed", "Workclass", "Occupation", "Hours Worked Per Week", "Married",
+        "Owns a House", "Education", "Native Country", "Loan Grade", "Previously Defaulted"]
+
+        for (col, value) in zip(columns, usr_data.values()):
+            result += f"{col}: {value}\n"
+
+        return result
     
     async def get_stage_two(self, message: discord.Message, usr: LoanUser) -> None:
+        """Interaction for the second stage. Get attached application as a pdf file, extract relevant data from this application and ask for user confirmation
+
+        Args:
+            message (discord.Message): message received from a user
+            usr (LoanUser): current user object
+        """
 
         if len(message.attachments) != 1 or not (file_name := message.attachments[0].filename).endswith(".pdf"):
             return
 
-        await message.attachments[0].save(file_name)
-        
-        parser = LoanApplicationParser(file_name)
-        usr_data = parser.parse()
+        try: 
+            await message.attachments[0].save(file_name)
+            
+            parser = LoanApplicationParser(file_name)
+            usr_data = parser.parse()
+        except ValueError:
+            await message.channel.send("Sorry, I couldn't some fields of your application. Please make sure to follow guidelines and resubmit your application")
+        except discord.HTTPException:
+            try:
+                os.remove(file_name)
+                await message.attachments[0].save(file_name)
+            except:
+                pass
 
-        await message.channel.send(f"Splendid! Here is what I managed to learn from your application:\n{usr_data}")
+        usr_info = self.__get_info_message(usr_data)
+
+        await message.channel.send(f"Splendid! Here is what I managed to learn from your application:\n\nName: {usr.name}\n{usr_info}")
         os.remove(file_name)
 
         usr.update_stage()
-
-
-        
-        
-
-
 
     
     async def respond_to_user(self, message: discord.Message, usr: LoanUser) -> None:
