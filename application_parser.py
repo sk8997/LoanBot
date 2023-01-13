@@ -103,9 +103,10 @@ class LoanApplicationParser(object):
                     if is_joint and answers[1] == "N/A":  # If this is a joint question and user answered N/A
                         data[key] = "N/A" # Populate all questions with N/A
                         index = 2
-                    elif not is_joint and answers[1] != "N/A": # if joint question but user didn't answer N/A
-                        data[key] = self.__separate_joint_question(answers[1])[index - 1]  # Separate each question from a single string
-                        index += 1
+                    elif is_joint and answers[1] != "N/A": # if joint question but user didn't answer N/A
+                        separated_answers = LoanApplicationParser.__separate_joint_question(answers[1]) # Separate each question from a single string
+                        data.update({"workclass": separated_answers[0], "occupation": separated_answers[1], "hours_per_week": separated_answers[2]})
+                        index = 2
                     else:
                         data[key] = answers[index]
                         index += 1
@@ -123,7 +124,7 @@ class LoanApplicationParser(object):
         """
 
         # Match all fields with "Asnwer: " in it
-        answers: list = re.findall("^Answer:\s*[a-zA-Z/\s]+\s*\n*$", application, flags = re.M|re.I)
+        answers: list = re.findall("^Answer:\s*[a-zA-Z/\s0-9,]+\s*\n*$", application, flags = re.M|re.I)
         
         # Extract user answer from matched lines
         for i in range(0, len(answers)):

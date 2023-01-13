@@ -38,7 +38,7 @@ class LoanUser(Person):
     __column_names: list = [
             "id", "name", "age", "sex", "employed", "workclass", "education",
             "marrital_status", "occupation", "race", "hours_per_week", "native_country",
-            "income", "person_home_ownership", "loan_grade", "loan_amount", "loan_percent_income",
+            "income", "person_home_ownership", "loan_grade", "loan_amount",
             "cb_person_default_on_file", "loan_status", "notes"
             ]
 
@@ -48,6 +48,7 @@ class LoanUser(Person):
 
         # Create user dataframe
         self.__generate_user_dataframe()
+        self.data = {}
         
 
         # Assign name and age to dataframe

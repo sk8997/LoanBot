@@ -73,6 +73,9 @@ class LoanBot(commands.Bot):
             usr.push_to_df(["name", "id"], [usr.name, usr.user_id]) # Push new data to df
 
             await message.channel.send(f"Perfect, {usr.name}! I'll create an account for you right away!\nAll done!\nNow, what loan amount are you planning to receive?")
+
+            usr.push_to_df(["id", "name"], [usr.user_id, usr.name]) # Update user data with new information
+
             usr.update_stage() # Proceed to next stage
 
     async def get_stage_one(self, message: discord.Message, usr: LoanUser) -> None:
@@ -128,22 +131,39 @@ class LoanBot(commands.Bot):
             parser = LoanApplicationParser(file_name)
             usr_data = parser.parse()
         except ValueError:
-            await message.channel.send("Sorry, I couldn't some fields of your application. Please make sure to follow guidelines and resubmit your application")
+            await message.channel.send("Sorry, I couldn't parse some fields of your application. Please make sure to follow guidelines and resubmit your application")
         except discord.HTTPException:
             try:
                 os.remove(file_name)
                 await message.attachments[0].save(file_name)
+                
+                parser = LoanApplicationParser(file_name)
+                usr_data = parser.parse()
             except:
                 pass
 
         usr_info = self.__get_info_message(usr_data)
 
-        await message.channel.send(f"Splendid! Here is what I managed to learn from your application:\n\nName: {usr.name}\n{usr_info}")
+        await message.channel.send(f"Splendid! Here is what I managed to learn from your application:\n\nName: {usr.name}\n{usr_info}\n\n\n Now, please provide us with your age")
         os.remove(file_name)
 
+        usr.push_to_df(list(usr_data.keys()), list(usr_data.values())) # Update dataframe with new infromation
         usr.update_stage()
 
-    
+    async def get_stage_three(self, message: discord.Message, usr: LoanUser) -> None:
+
+        if message.content.isnumeric() and 0 < int(message.content) < 130:  # Check if user gave a number. Loan amount must be numeric
+
+                usr.push_to_df(["age"], [message.content])  # Push this amount to the dataframe 
+                await message.channel.send("Got it! Now, give me a moment while I calculate your results...")
+
+                usr.update_stage() # proceed to next stage
+
+                print(usr.user_data)
+        else:
+            await message.channel.send("Sorry, I don't think this is a valid age. Try again")
+
+
     async def respond_to_user(self, message: discord.Message, usr: LoanUser) -> None:
         """Main logic of bot-user interaction. This function handles all interactions with user. This process is staged, such that each stage involves a separate set of interactions. This function is using elif statements to avoid incompatibility with python versions below 3.10 
 
@@ -164,9 +184,13 @@ class LoanBot(commands.Bot):
             
             await self.get_stage_one(message, usr)
         
-        elif (stage == 2):
+        elif (stage == 2):  # Read user application
 
             await self.get_stage_two(message, usr)
+
+        elif (stage == 3):  # Get age
+
+            await self.get_stage_three(message, usr)
 
                     
     def init_user(self, usr: LoanUser) -> None:
