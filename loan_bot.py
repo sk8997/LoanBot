@@ -158,8 +158,6 @@ class LoanBot(commands.Bot):
                 await message.channel.send("Got it! Now, give me a moment while I calculate your results...")
 
                 usr.update_stage() # proceed to next stage
-
-                print(usr.user_data)
         else:
             await message.channel.send("Sorry, I don't think this is a valid age. Try again")
 
@@ -191,6 +189,7 @@ class LoanBot(commands.Bot):
         elif (stage == 3):  # Get age
 
             await self.get_stage_three(message, usr)
+
 
                     
     def init_user(self, usr: LoanUser) -> None:
