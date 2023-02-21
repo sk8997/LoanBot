@@ -59,6 +59,10 @@ class LoanUser(Person):
 
         self.stage: int = 0
 
+
+    def default_user(self):
+        (self.user_data).loc[0] = ["123234", "Stas", 23, "Male", "Yes", "Private", "HS-grad", 0, "Sales", "White", "12","Ukraine", "1", "No", "C", "444", "N", None, None]
+
     
 
     def __get_id(self) -> None:

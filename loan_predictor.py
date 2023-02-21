@@ -6,7 +6,7 @@ from loan_user import LoanUser
 from typing import Union, Tuple
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.linear_model import LogisticRegression
-from sklearn.preprocessing import LabelEncoder, StandardScaler
+from sklearn.preprocessing import LabelEncoder, StandardScaler, OrdinalEncoder
 from sklearn.decomposition import PCA
 
 class LoanPredictor(object):
@@ -14,6 +14,10 @@ class LoanPredictor(object):
     # Default names for ML models
     salary_model_filename: str = "salary_model.sav"
     risk_model_filename: str = "risk_model.sav"
+
+    # Encoders
+    risk_encoder: str = "risk_encoder.npy"
+    salary_encoder: str = "salary_encoder.npy"
 
     def __init__(self, usr: LoanUser) -> None:
         
@@ -60,29 +64,43 @@ class LoanPredictor(object):
     def __predict_salary(self) -> None:
 
         loaded_model = self.__load_model(self.salary_model_filename)
+        print(self.salary_data)
 
-        salary = (self.salary_data).apply(LabelEncoder().fit_transform)
+        encoder = OrdinalEncoder()
+        encoder.categories_ = np.load(self.salary_encoder, allow_pickle = True)
 
+
+        self.salary_data[["workclass", "education", "occupation", "race", "sex", "native_country"]] = encoder.transform(self.salary_data[["workclass", "education", "occupation", "race", "sex", "native_country"]])
+        print(self.salary_data)
         # Predict
-        predicted_income = loaded_model.predict(salary)
+        predicted_income = loaded_model.predict(self.salary_data)
 
-        # Push to df
 
-        self.usr.push_to_df(["income", [predicted_income]])
+        if predicted_income == 0:
+            self.usr.push_to_df(["income"], ["<=50K"])
+        else:
+            self.usr.push_to_df(["income"], [">50K"])
 
-    def __predict_risk(self) -> float:
+    def _predict_risk(self) -> float:
 
+        predicted_risk = None
         # Predict salary
 
         self.__predict_salary()
 
         # Extract risk model columns
-        risk_data = (self.data)[["age", "income", "person_home_ownership", "employed", "loan_grade", "loan_amount", "cb_person_default_on_file"]]
-
+        risk_data = ((self.usr).user_data)[["age", "income", "person_home_ownership", "employed", "loan_grade", "loan_amount", "cb_person_default_on_file"]]
+        print(risk_data)
         # PCA 
-        risk_data = risk_data.apply(LabelEncoder().fit_transform)
+
+        # Load encoder 
+        encoder = OrdinalEncoder()
+        encoder.categories_ = np.load(self.risk_encoder, allow_pickle = True)
+
+        risk_data = encoder.inverse_transform((risk_data).to_numpy().reshape(1, -1))
 
         zscored = stats.zscore(risk_data)
+        print(zscored)
 
         pca = PCA().fit(zscored)
 

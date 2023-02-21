@@ -11,6 +11,7 @@ from dotenv import load_dotenv
 from discord.ext import commands
 from loan_user import *
 from application_parser import *
+from loan_predictor import *
 
 
 class LoanBot(commands.Bot):
@@ -87,7 +88,7 @@ class LoanBot(commands.Bot):
         """
         if message.content.isnumeric():  # Check if user gave a number. Loan amount must be numeric
 
-                usr.push_to_df(["loan_amount"], [message.content])  # Push this amount to the dataframe 
+                usr.push_to_df(["loan_amount"], [int(message.content)])  # Push this amount to the dataframe 
                 await message.channel.send(f"Wonderful!! We will be looking for a ${message.content} loan\nPlease, fill out the attached document and send it back to me as a .pdf file")
                 await message.channel.send(file = discord.File("LoanApplicationExample.docx"))
 
@@ -148,15 +149,21 @@ class LoanBot(commands.Bot):
         os.remove(file_name)
 
         usr.push_to_df(list(usr_data.keys()), list(usr_data.values())) # Update dataframe with new infromation
+        print(usr.user_data)
         usr.update_stage()
 
     async def get_stage_three(self, message: discord.Message, usr: LoanUser) -> None:
 
         if message.content.isnumeric() and 0 < int(message.content) < 130:  # Check if user gave a number. Loan amount must be numeric
 
-                usr.push_to_df(["age"], [message.content])  # Push this amount to the dataframe 
+                usr.push_to_df(["age"], [int(message.content)])  # Push this amount to the dataframe 
                 await message.channel.send("Got it! Now, give me a moment while I calculate your results...")
 
+                predictor = LoanPredictor(usr)
+
+                risk = predictor._predict_risk()
+
+                await message.channel.send(f"Your expected risk is: {risk}")
                 usr.update_stage() # proceed to next stage
         else:
             await message.channel.send("Sorry, I don't think this is a valid age. Try again")
@@ -190,8 +197,7 @@ class LoanBot(commands.Bot):
 
             await self.get_stage_three(message, usr)
 
-
-                    
+              
     def init_user(self, usr: LoanUser) -> None:
         """A wrapper function for respond_to_user(). Listens for messages and ignores those messages that were sent by the bot itself. 
 

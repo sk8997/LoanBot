@@ -50,7 +50,7 @@ import seaborn as sns
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score, classification_report, confusion_matrix, roc_auc_score
 from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import LabelEncoder
+from sklearn.preprocessing import LabelEncoder, OrdinalEncoder
 
 
 # Global Variables 
@@ -190,15 +190,26 @@ for country in range(0, len(developed_countries)):
 
 salary_data["native-country"] = np.where(salary_data["native-country"].isin(developed_countries), "developed", "developing")
 
+# %%
+
+"""
+Remove spaces from categorical columns 
+"""
+
+salary_data = salary_data.apply(lambda x: x.str.strip() if x.dtype == "object" else x)
+
+
 
 # %%
 
 """
-Change education values with grade numbers to "Some-HS"
+Change education values with grade numbers to "Some-HS" and Rename native-country
+
 
 """
 salary_data["education"] = salary_data["education"].str.replace(r'[0-9]+th', "Some-HS", regex = True) # replace with regex
 
+salary_data = salary_data.rename(columns = {"native-country": "native_country"})
 
 # %%
 
@@ -207,15 +218,19 @@ salary_data["education"] = salary_data["education"].str.replace(r'[0-9]+th', "So
     
 """
 
-# Change categorical values 
-
-salary_data = salary_data.apply(LabelEncoder().fit_transform)
-salary_data.sample(10)
-
 # Separate predictor and outcome varibales
 
 X = salary_data.drop("salary", axis = 1, inplace=False)
 Y = salary_data["salary"]
+
+# Change categorical values 
+encoder = OrdinalEncoder()
+X[["workclass", "education", "occupation", "race", "sex", "native_country"]] = encoder.fit_transform(X[["workclass", "education", "occupation", "race", "sex", "native_country"]])
+salary_data.sample(10)
+
+# Save ecnoder for deployment
+np.save('salary_encoder.npy', encoder.categories_)
+
 
 # Split predictor and outcome into test and train subsets (70/30)
 

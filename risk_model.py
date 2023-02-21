@@ -25,7 +25,7 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score, classification_report, confusion_matrix, roc_auc_score
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LogisticRegression
-from sklearn.preprocessing import LabelEncoder, StandardScaler
+from sklearn.preprocessing import LabelEncoder, StandardScaler, OrdinalEncoder
 from sklearn.decomposition import PCA
 from matplotlib.ticker import PercentFormatter
 
@@ -108,7 +108,7 @@ sns.heatmap(numeric_temp_risk_data.corr(), annot = True)
 """
 3) Cleaning Data
 
-   * Drop redundant columns ("cb_person_cred_hist_length", "loan_int_rate", "loan_intent")
+   * Drop redundant columns ("cb_person_cred_hist_length", "loan_int_rate", "loan_percent_income", "loan_intent")
    * Replace missing values for the employ. length column with mode
    * Change personal income to binary (above $50K/year or below $50K/year)
    * Change employement legth to binary (employed/unemployed; employed if employement length > 0)
@@ -122,7 +122,7 @@ a) Drop redundant columns ("cb_person_cred_hist_length", "loan_int_rate", "loan_
 
 """
 # Drop
-risk_data.drop(["cb_person_cred_hist_length", "loan_int_rate", "loan_intent"], axis = 1, inplace = True)
+risk_data.drop(["cb_person_cred_hist_length", "loan_int_rate", "loan_percent_income","loan_intent"], axis = 1, inplace = True)
 
 # %%
 
@@ -159,6 +159,10 @@ d) Change employement legth to binary (employed/unemployed; employed if employem
 
 """
 
+# Rename columns for deployement 
+
+risk_data.rename(columns={"person_age": "age", "person_income": "income", "person_emp_length": "employed", "loan_amnt": "loan_amount"})
+
 # Replace
 
 risk_data["person_emp_length"] = np.where(risk_data["person_emp_length"] > 0, "employed", "unemployed")
@@ -169,6 +173,7 @@ X = risk_data.drop("loan_status", inplace = False, axis = 1)
 Y = risk_data["loan_status"]
 
 num_predictor_columns = len(X.columns) # How many predictor values left after cleaning. Will need this later for the PCA
+
 
 
 # %% 
@@ -203,8 +208,12 @@ if (ridge):
     
     
     # Change all values to numeric 
-    X = X.apply(LabelEncoder().fit_transform)
+    encoder = OrdinalEncoder()
+    X = encoder.fit_transform(X)
     X.sample(10)
+    
+    # Save ecnoder for deployment
+    np.save('risk_encoder.npy', encoder.categories_)
     
     # Z score data to avoid (1) offset and (2) unequal variance
     zscored_X = stats.zscore(X)
