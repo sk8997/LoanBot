@@ -10,6 +10,8 @@ from sklearn.preprocessing import LabelEncoder, StandardScaler, OrdinalEncoder
 from sklearn.decomposition import PCA
 
 class LoanPredictor(object):
+    """Predicts loan interest rate
+    """
 
     # Default names for ML models
     salary_model_filename: str = "salary_model.sav"
@@ -20,6 +22,11 @@ class LoanPredictor(object):
     salary_encoder: str = "salary_encoder.npy"
 
     def __init__(self, usr: LoanUser) -> None:
+        """Default constructor for the predictor
+
+        Args:
+            usr (LoanUser): current user
+        """
         
         self.usr = usr
 
@@ -29,12 +36,24 @@ class LoanPredictor(object):
 
         self.__clean_data()
 
-    def __load_model(self, file_name: str) -> Union[RandomForestClassifier, LogisticRegression]:
+    def __load_model(self, file_name: str) -> object:
+        """Loads ML model from a file
+
+        Args:
+            file_name (str): name of the file
+
+        Returns:
+            object: any object that has been saved in a given file. For this particular project, this method used to load categories_ and mean_ object for ML models  
+        """
 
         return pickle.load(open(file_name, "rb"))
 
 
-    def __separate_data(self) -> Tuple[pd.DataFrame, pd.DataFrame, None]:
+    def __separate_data(self) -> Tuple[pd.DataFrame, None]:
+        """Separates entire user dataframe into feature subset relevant to salary prediction model
+        Returns:
+            Tuple[pd.DataFrame, None]: returns either a dataframe with features relevant for salary prediction model or None if fails tp slice user data
+        """
 
         try:
             salary_data = ((self.usr).user_data)[["age", "workclass", "education", "marrital_status", "occupation", "race", "sex", "hours_per_week", "native_country"]]
@@ -45,6 +64,8 @@ class LoanPredictor(object):
 
 
     def __change_country_to_binary(self) -> None:
+        """Preprocessing. Change native country to binary classification (developed, developing)
+        """
 
         developed_countries: list = pd.read_csv("C:\Projects\Salary_Prediction\HDI.csv")
         developed_countries = developed_countries[developed_countries["hdi2019"] >= 0.8] # Drop developing countries
@@ -56,22 +77,26 @@ class LoanPredictor(object):
             self.usr.user_data.loc[0, "native_country"] = "developing"
 
     def __clean_data(self) -> None:
+        """Wrapper method. Perfoms all nessesary data cleaning operations 
+        """
 
         self.__change_country_to_binary()
 
         self.salary_data = self.__separate_data()
 
     def __predict_salary(self) -> None:
+        """Predicts whether user salary is above $50K a year and pushes results to dataframe
+        """
 
         loaded_model = self.__load_model(self.salary_model_filename)
-        print(self.salary_data)
+        
 
         encoder = OrdinalEncoder()
         encoder.categories_ = np.load(self.salary_encoder, allow_pickle = True)
 
-
+        # Encode 
         self.salary_data[["workclass", "education", "occupation", "race", "sex", "native_country"]] = encoder.transform(self.salary_data[["workclass", "education", "occupation", "race", "sex", "native_country"]])
-        print(self.salary_data)
+        
         # Predict
         predicted_income = loaded_model.predict(self.salary_data)
 
@@ -82,6 +107,11 @@ class LoanPredictor(object):
             self.usr.push_to_df(["income"], [">50K"])
 
     def _predict_risk(self) -> float:
+        """Predicts the likelyhood of defaulting on a loan
+
+        Returns:
+            float: likelyhood of defaulting on a loan for a given user [0, 1]
+        """
 
         predicted_risk = None
         # Predict salary
@@ -90,29 +120,31 @@ class LoanPredictor(object):
 
         # Extract risk model columns
         risk_data = ((self.usr).user_data)[["age", "income", "person_home_ownership", "employed", "loan_grade", "loan_amount", "cb_person_default_on_file"]]
-        print(risk_data)
+        categorical_cols = ["income", "person_home_ownership", "employed", "loan_grade", "cb_person_default_on_file"]
+        
         # PCA 
 
         # Load encoder 
         encoder = OrdinalEncoder()
         encoder.categories_ = np.load(self.risk_encoder, allow_pickle = True)
 
-        risk_data = encoder.inverse_transform((risk_data).to_numpy().reshape(1, -1))
+        risk_data[categorical_cols] = encoder.transform((risk_data[categorical_cols]).to_numpy().reshape(1, -1))
 
-        zscored = stats.zscore(risk_data)
-        print(zscored)
+        #zscored = stats.zscore(risk_data)
+        #print(zscored)
 
-        pca = PCA().fit(zscored)
-
-        rotated_data = pca.fit_transform(zscored)
+        pca = PCA()
+        pca.components_ = self.__load_model("risk_pca.sav")
+        pca.mean_ = self.__load_model("risk_pca_mean.sav")
+        pca_data = pca.transform(risk_data)
 
         # Load Model
         loaded_model = self.__load_model(self.risk_model_filename)
 
         # Predict 
-        predicted_risk = loaded_model.predict(rotated_data)
+        predicted_risk = loaded_model.predict_proba(pca_data)
 
-        return predicted_risk
+        return predicted_risk[0, 1]
 
 
 

@@ -40,7 +40,7 @@ variance_threshold: float = 1.00 # Threshold for the n% criterion used to choose
 # Flags
 ridge: bool = True # Flag for the type of ML model. True for Rindge Regression, False for Random Forest.
 kaiser: bool = False # Flag for the type of Eigenvalue selection. Either Kaiser or n%.
-save_as_sav: bool = False # Save model as a .sav file 
+save_as_sav: bool = True # Save model as a .sav file 
 
 
 # TODO os, descriptives dataframe, report
@@ -206,21 +206,27 @@ Will use Kaiser criterion or n% of the variance explained to select important Ei
 
 if (ridge):
     
-    
+    categorical_cols = ["person_income", "person_home_ownership", "person_emp_length", "loan_grade", "cb_person_default_on_file"]
     # Change all values to numeric 
     encoder = OrdinalEncoder()
-    X = encoder.fit_transform(X)
-    X.sample(10)
+    X[categorical_cols] = encoder.fit_transform(X[categorical_cols])
+    
     
     # Save ecnoder for deployment
     np.save('risk_encoder.npy', encoder.categories_)
     
     # Z score data to avoid (1) offset and (2) unequal variance
-    zscored_X = stats.zscore(X)
+    #zscored_X = stats.zscore(X)
     
     # Apply the PCA
     
-    pca = PCA().fit(zscored_X)
+    pca = PCA().fit(X)
+    
+    # Save PCA
+    filename = "risk_pca.sav"
+
+    pickle.dump(pca.components_, open(filename, "wb"))
+    pickle.dump(pca.mean_, open("risk_pca_mean.sav", "wb"))
     
     #Eigenvalues 
     eig_vals = pca.explained_variance_
@@ -229,7 +235,7 @@ if (ridge):
     loadings = pca.components_
     
     # Transformed data. Original variables substituted with factors ordered in decreasing Eigenvalues
-    rotated_data = pca.fit_transform(zscored_X)
+    rotated_data = pca.fit_transform(X)
     
     # Explained variance for each factor 
     

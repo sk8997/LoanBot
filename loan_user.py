@@ -61,7 +61,7 @@ class LoanUser(Person):
 
 
     def default_user(self):
-        (self.user_data).loc[0] = ["123234", "Stas", 23, "Male", "Yes", "Private", "HS-grad", 0, "Sales", "White", "12","Ukraine", "1", "No", "C", "444", "N", None, None]
+        (self.user_data).loc[0] = ["123234", "Stas", 23, "Male", "employed", "Private", "HS-grad", 0, "Sales", "White", "12","Ukraine", "1", "RENT", "C", 444, "N", None, None]
 
     
 
