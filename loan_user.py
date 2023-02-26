@@ -39,7 +39,7 @@ class LoanUser(Person):
             "id", "name", "age", "sex", "employed", "workclass", "education",
             "marrital_status", "occupation", "race", "hours_per_week", "native_country",
             "income", "person_home_ownership", "loan_grade", "loan_amount",
-            "cb_person_default_on_file", "loan_status", "notes"
+            "cb_person_default_on_file", "loan_status", "interest_rate", "notes"
             ]
 
 
@@ -61,9 +61,9 @@ class LoanUser(Person):
 
 
     def default_user(self):
-        (self.user_data).loc[0] = ["123234", "Stas", 23, "Male", "employed", "Private", "HS-grad", 0, "Sales", "White", "12","Ukraine", "1", "RENT", "C", 444, "N", None, None]
-
-    
+        """Instantiate user with default data values.
+        """
+        (self.user_data).loc[0] = ["123234", "John", 23, "Male", "employed", "Private", "HS-grad", 0, "Sales", "White", "12","Peru", "1", "RENT", "C", 444, "N", None, None]
 
     def __get_id(self) -> None:
         """Generate a unique ID for the user. Note that this ID is not 'universaly' unique, meaning that uniqueness of this value is true only for local dataset

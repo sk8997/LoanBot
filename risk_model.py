@@ -330,6 +330,9 @@ if (ridge):
     
     # AUC
     auc = roc_auc_score(y_test, predictions_final)
+    
+    
+    average_probability = sum(predictions_probability[1]) / len(predictions_probability[1])
 
 
 # %%

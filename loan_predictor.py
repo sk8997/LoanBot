@@ -146,6 +146,44 @@ class LoanPredictor(object):
 
         return predicted_risk[0, 1]
 
+    def __to_percent(self, interest: float, loan_amount: float) -> int:
+        """Transform interest amount to percentage of original loan amount
+
+        Args:
+            interest (float): calculated interest amount
+            loan_amount (float): original loan amount 
+
+        Returns:
+            int: interest rate (rounded down) 
+        """
+        return int((interest / loan_amount) * 100)
+
+
+
+    def _get_interest_rate(self, theta_rate: float = 0, weight_normalization: float = 0) -> int:
+        """Calculates interest rate from loan amount and risk of default. This function maximizes interest amount such that expected gain from loan is greater than some value theta. That is E[gain] > theta. 
+
+        Args:
+            theta_rate (float, optional): Percentage of original loan amount that is expected to be the minimul profit amount for the loan issuer. Must be between 0 and 1. Defaults to 0.
+            weight_normalization (float, optional): Normalization value that decreases or increases the average default probability. The greater the value, the smaller interest rates will be. Must be between 0 and 1. Defaults to 0.
+
+        Returns:
+            int: final interest rate
+        """
+        if 0> theta_rate > 1:
+            theta_rate = 0
+
+        average_probability = 0.5 * (1 - weight_normalization)
+        individual_probability = self._predict_risk()
+
+        weighted_probability = individual_probability * average_probability
+        loan_amount = self.usr.user_data["loan_amount"].iloc[0]
+
+        interest = ((theta_rate * loan_amount) + loan_amount * weighted_probability) / 1 - weighted_probability
+
+        return self.__to_percent(interest, loan_amount)
+
+
 
 
         

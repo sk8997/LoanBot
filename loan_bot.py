@@ -154,16 +154,18 @@ class LoanBot(commands.Bot):
 
     async def get_stage_three(self, message: discord.Message, usr: LoanUser) -> None:
 
-        if message.content.isnumeric() and 0 < int(message.content) < 130:  # Check if user gave a number. Loan amount must be numeric
+        if message.content.isnumeric() and 0 < int(message.content) < 130:  # Check if user gave a right number. 
 
                 usr.push_to_df(["age"], [int(message.content)])  # Push this amount to the dataframe 
                 await message.channel.send("Got it! Now, give me a moment while I calculate your results...")
 
                 predictor = LoanPredictor(usr)
 
-                risk = predictor._predict_risk()
+                interest_rate = predictor._get_interest_rate(weight_normalization = 0.6)
 
-                await message.channel.send(f"Your expected risk is: {risk}")
+                await message.channel.send(f"Your expected risk is: {interest_rate}")
+                usr.push_to_df(["interest_rate"], [interest_rate]) # Push calculated interest rate to user dataframe
+
                 usr.update_stage() # proceed to next stage
         else:
             await message.channel.send("Sorry, I don't think this is a valid age. Try again")
