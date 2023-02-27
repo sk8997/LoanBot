@@ -43,7 +43,6 @@ kaiser: bool = False # Flag for the type of Eigenvalue selection. Either Kaiser 
 save_as_sav: bool = True # Save model as a .sav file 
 
 
-# TODO os, descriptives dataframe, report
 
 # %%
 
@@ -332,7 +331,7 @@ if (ridge):
     auc = roc_auc_score(y_test, predictions_final)
     
     
-    average_probability = sum(predictions_probability[1]) / len(predictions_probability[1])
+    average_probability = np.mean(risk_data["loan_status"])
 
 
 # %%

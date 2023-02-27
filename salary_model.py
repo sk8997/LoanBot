@@ -28,10 +28,6 @@ salary: <=50K or >50K
 
 
 """
-
-# TODO Use os to detect the filepath for all datasets and remove hardcoded paths
-# TODO EDA
-# TODO Read how to interpret the AUC and other values, plot AUC if possible
 # TODO add link to Kaggle dataset
 
 # %% 
@@ -47,14 +43,16 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
+from pathlib import Path
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score, classification_report, confusion_matrix, roc_auc_score
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder, OrdinalEncoder
 
 
+
 # Global Variables 
-data_name: str = "C:\Projects\Salary_Prediction\salary.csv" # name of the dataset
+data_name: str = "salary.csv" # name of the dataset
 seed: int = 4634  # random state for train/test split
 num_trees: int = 1000 # number of trees for boosting  
 test_proportion: float = 0.3 # Proportion of the test set for Test/Train split
@@ -173,7 +171,7 @@ HDI dataset taken from the World Population Review (https://worldpopulationrevie
 
 # Load HDI dataset
 
-developed_countries: list = pd.read_csv("C:\Projects\Salary_Prediction\HDI.csv")
+developed_countries: list = pd.read_csv("HDI.csv")
 
 developed_countries = developed_countries[developed_countries["hdi2019"] >= 0.8] # Drop developing countries
 developed_countries = (developed_countries["country"]).tolist() # Get a list of only developed countries
