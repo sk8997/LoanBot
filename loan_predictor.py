@@ -67,7 +67,7 @@ class LoanPredictor(object):
         """Preprocessing. Change native country to binary classification (developed, developing)
         """
 
-        developed_countries: list = pd.read_csv("C:\Projects\Salary_Prediction\HDI.csv")
+        developed_countries: list = pd.read_csv("HDI.csv")
         developed_countries = developed_countries[developed_countries["hdi2019"] >= 0.8] # Drop developing countries
         developed_countries = (developed_countries["country"]).tolist() # Get a list of only developed countries
 
@@ -173,7 +173,7 @@ class LoanPredictor(object):
         if 0> theta_rate > 1:
             theta_rate = 0
 
-        average_probability = 0.5 * (1 - weight_normalization)
+        average_probability = 0.2181 * (1 - weight_normalization)
         individual_probability = self._predict_risk()
 
         weighted_probability = individual_probability * average_probability

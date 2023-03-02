@@ -21,9 +21,6 @@ class LoanBot(commands.Bot):
         Bot (discord.ext.command)
     """
 
-    users: list = []
-            
-
     def __init__(self) -> None:
         """Contructor for the LoanBot. All commands are prefixed with '/'
         """
@@ -32,6 +29,7 @@ class LoanBot(commands.Bot):
 
         self.setup() # Notify when ready
         self.add_commands() # Define commands
+        self.__set_db() # Establish database connection
         
     
     def setup(self) -> None:
@@ -40,6 +38,22 @@ class LoanBot(commands.Bot):
         @self.listen()
         async def on_ready() -> None:
             print("Bot is now online")
+
+    def __set_db(self) -> None:
+        with open("config.txt") as config:
+           lines = config.readlines()
+
+        tmp = []
+        for line in lines:
+            line.strip().split(" ")
+            tmp.append(line)
+
+        self.db_username = tmp[0][3]
+        self.db_hostname = tmp[1][3]
+        self.db_password = tmp[2][3]
+
+        self.db = LoanDatabase(self.db_username, self.db_hostname, self.db_password)
+
 
     def is_name(name: str) -> bool:
         """Checks whether a string corresponds to a name of an individual. Such names should not include most special characters such as ($,%,& etc) and numbers
@@ -163,8 +177,10 @@ class LoanBot(commands.Bot):
 
                 interest_rate = predictor._get_interest_rate(weight_normalization = 0.6)
 
-                await message.channel.send(f"Your expected risk is: {interest_rate}")
+                await message.channel.send(f"Your expected interest is: {interest_rate}")
                 usr.push_to_df(["interest_rate"], [interest_rate]) # Push calculated interest rate to user dataframe
+
+                usr.dump_data_to_sql(self.db)
 
                 usr.update_stage() # proceed to next stage
         else:
@@ -231,6 +247,7 @@ class LoanBot(commands.Bot):
 
             await ctx.channel.send(f"Hello, thank you for choosing our services. Before we proceed, may I confrim that your full name is {ctx.author.display_name}?") # Welcome message
             self.init_user(user) # Gather user data
+
 
     
 
