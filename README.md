@@ -4,9 +4,10 @@ The significance of this project extends far beyond its immediate impact on loan
 
 To illustrate our findings, we conducted a simulation of 100,000 risk values ranging from 0 to 1, sourced from a gamma distribution with K = 2 and mean = 0.07. Using the expected value of a binomial distribution (i.e., repeated trial with probability p), we calculated the potential financial loss. Conversely, we computed the potential gains based on the assigned interest rates derived from our model, as well as a flat 10% rate. The resulting outcomes are presented below for your consideration:
 
-<img src="https://user-images.githubusercontent.com/84877088/227411585-93e74955-adb3-45e5-8d83-c9f1afabcea4.png" width=35% height=35% align="left">
+<img src="https://user-images.githubusercontent.com/84877088/227411585-93e74955-adb3-45e5-8d83-c9f1afabcea4.png" width=40% height=40% align="left">
 
-<img src="https://user-images.githubusercontent.com/84877088/227412371-b60f6c21-bbb7-4a1a-a3c7-83f142f14b30.png" width=35% height=35% align="right">
+<img src="https://user-images.githubusercontent.com/84877088/227412371-b60f6c21-bbb7-4a1a-a3c7-83f142f14b30.png" width=40% height=40% align="right">
+
 
 
 
