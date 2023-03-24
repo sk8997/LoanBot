@@ -6,7 +6,7 @@ To illustrate our findings, we conducted a simulation of 100,000 risk values ran
 
 <img src="https://user-images.githubusercontent.com/84877088/227411585-93e74955-adb3-45e5-8d83-c9f1afabcea4.png" width=25% height=25%>
 
-![gamma](https://user-images.githubusercontent.com/84877088/227411585-93e74955-adb3-45e5-8d83-c9f1afabcea4.png | width=100)
+<img src="https://user-images.githubusercontent.com/84877088/227412371-b60f6c21-bbb7-4a1a-a3c7-83f142f14b30.png" width=25% height=25%>
 
 ![eff](https://user-images.githubusercontent.com/84877088/227412371-b60f6c21-bbb7-4a1a-a3c7-83f142f14b30.png =250x250)
 
