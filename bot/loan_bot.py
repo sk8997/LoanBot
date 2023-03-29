@@ -21,15 +21,24 @@ class LoanBot(commands.Bot):
         Bot (discord.ext.command)
     """
 
-    def __init__(self) -> None:
-        """Contructor for the LoanBot. All commands are prefixed with '/'
+    def __init__(self, username: str, hostname: str, password: str, normalization: float) -> None:
+        """Main constructor for the Loan Bot. All commands are prefixed with '/'
+
+        Args:
+            username (str): MySQL username
+            hostname (str): MySQL hostname
+            password (str): MySQL password
+            normalization (float): interest rate weight normalization
         """
+
+        self.norm = normalization
+
         super().__init__(command_prefix = "/", intents = discord.Intents.all())
 
 
         self.setup() # Notify when ready
         self.add_commands() # Define commands
-        self.__set_db() # Establish database connection
+        self.__set_db(hostname, username, password) # Establish database connection
         
     
     def setup(self) -> None:
@@ -39,18 +48,11 @@ class LoanBot(commands.Bot):
         async def on_ready() -> None:
             print("Bot is now online")
 
-    def __set_db(self) -> None:
-        with open("config.txt") as config:
-           lines = config.readlines()
+    def __set_db(self, hostname, username, password) -> None:
 
-        tmp = []
-        for line in lines:
-            line.strip().split(" ")
-            tmp.append(line)
-
-        self.db_username = tmp[0][3]
-        self.db_hostname = tmp[1][3]
-        self.db_password = tmp[2][3]
+        self.db_username = username
+        self.db_hostname = hostname
+        self.db_password = password
 
         self.db = LoanDatabase(self.db_username, self.db_hostname, self.db_password)
 
@@ -140,27 +142,29 @@ class LoanBot(commands.Bot):
         if len(message.attachments) != 1 or not (file_name := message.attachments[0].filename).endswith(".pdf"):
             return
 
+        file_path = "apps/" + file_name
         try: 
-            await message.attachments[0].save(file_name)
+            await message.attachments[0].save(file_path)
             
-            parser = LoanApplicationParser(file_name)
+            parser = LoanApplicationParser(file_path)
             usr_data = parser.parse()
         except ValueError:
             await message.channel.send("Sorry, I couldn't parse some fields of your application. Please make sure to follow guidelines and resubmit your application")
         except discord.HTTPException:
             try:
-                os.remove(file_name)
-                await message.attachments[0].save(file_name)
+                os.remove(file_path)
+                await message.channel.send("Sorry, an error occured. Please try resubmit you application")
+                await message.attachments[0].save(file_path)
                 
-                parser = LoanApplicationParser(file_name)
+                parser = LoanApplicationParser(file_path)
                 usr_data = parser.parse()
-            except:
-                pass
+            except ValueError:
+                await message.channel.send("Sorry, I couldn't parse some fields of your application. Please make sure to follow guidelines and resubmit your application")
 
         usr_info = self.__get_info_message(usr_data)
 
         await message.channel.send(f"Splendid! Here is what I managed to learn from your application:\n\nName: {usr.name}\n{usr_info}\n\n\n Now, please provide us with your age")
-        os.remove(file_name)
+        os.remove(file_path)
 
         usr.push_to_df(list(usr_data.keys()), list(usr_data.values())) # Update dataframe with new infromation
         print(usr.user_data)
@@ -175,7 +179,7 @@ class LoanBot(commands.Bot):
 
                 predictor = LoanPredictor(usr)
 
-                interest_rate = predictor._get_interest_rate(weight_normalization = 0.6)
+                interest_rate = predictor._get_interest_rate(weight_normalization = self.norm)
 
                 await message.channel.send(f"Your expected interest is: {interest_rate}")
                 usr.push_to_df(["interest_rate"], [interest_rate]) # Push calculated interest rate to user dataframe

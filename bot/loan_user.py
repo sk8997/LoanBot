@@ -60,18 +60,11 @@ class LoanUser(Person):
         self.stage: int = 0
 
 
-    def default_user(self):
+    def __default_user(self):
         """Instantiate user with default data values.
         """
         (self.user_data).loc[0] = ["123234", "John", 23, "Male", "employed", "Private", "HS-grad", 0, "Sales", "White", "12","Peru", "1", "RENT", "C", 444, "N", None, None, None]
 
-    def __get_id(self) -> None:
-        """Generate a unique ID for the user. Note that this ID is not 'universaly' unique, meaning that uniqueness of this value is true only for local dataset
-        """
-        try:
-            self.user_id: str = self.name[:4] + str(Person.person_number) + str(self.age)
-        except:
-            self.user_id: str = self.name[: len(self.name)] + str(Person.person_number) + str(self.age)
 
     def is_valid_age(age: int) -> bool:
         """Check is the age is within acceptable range
@@ -84,7 +77,7 @@ class LoanUser(Person):
         """
         try:
             valid = 130 >= age >= 0
-        except Exception:
+        except ValueError:
             return False
         return valid
 
@@ -113,7 +106,7 @@ class LoanUser(Person):
         try:
             result = (db.read_query(f"SELECT count(*) FROM {LoanDatabase.table_name} WHERE id = '{self.user_id}'"))[0][0] != 0
             return result
-        except:
+        except mysql.connector.Error:
             return False
 
     def push_to_df(self, col_names: list, values: list) -> None:
@@ -144,18 +137,16 @@ class LoanUser(Person):
 
             try:
                 self.user_data.to_sql(con = db.engine, name = LoanDatabase.table_name, if_exists = 'append')
-            except Exception:
-                try:
-                    self.generate_user_dataframe()
-                    self.user_data.to_sql(con = db.connection, name = LoanDatabase.table_name, if_exists = 'append')
-                except Exception as ex:
-                    print(f"Couldn't dump data: Error: '{ex}'")
+            except sqlalchemy.exc.SQLAlchemyError:
                     return 0
             return 1
 
         else:
-            db.execute_query(f"DELETE FROM {LoanDatabase.table_name} WHERE id = '{self.user_id}'")
-            self.dump_data_to_sql(db)
+            try:
+                db.execute_query(f"DELETE FROM {LoanDatabase.table_name} WHERE id = '{self.user_id}'")
+                self.dump_data_to_sql(db)
+            except mysql.connector.Error:
+                return 0
     
     def get_user_data(self, db: LoanDatabase) -> pd.DataFrame:
         """Read data of this user from your MySQL Server.
@@ -164,16 +155,17 @@ class LoanUser(Person):
             db (LoanDatabase): Database object connected MySQL Server
 
         Returns:
-            pd.DataFrame: Pandas dataframe with user data fetched from MySQL Server
+            pd.DataFrame: Pandas dataframe with user data fetched from MySQL Server or None if user doesn't exist
         """
 
-        sql_user = pd.read_sql_query(f"SELECT * FROM {LoanDatabase.table_name} WHERE id = '{self.user_id}'", con = db.connection)
-
-        # Check if sql_user is empty to throw exception here
-
         try:
-            user_data = pd.DataFrame(sql_user, columns = LoanUser.__column_names)
-        except Exception:
+             sql_user = pd.read_sql_query(f"SELECT * FROM {LoanDatabase.table_name} WHERE id = '{self.user_id}'", con = db.connection)
+             if sql_user.empty:
+                raise ValueError("No data found for this user")
+             user_data = pd.DataFrame(sql_user, columns = LoanUser.__column_names)
+        except (pd.errors.DatabaseError, pd.errors.ProgrammingError): # Database issues
+            user_data = None
+        except (ValueError):  # No user data
             user_data = None
 
         return user_data

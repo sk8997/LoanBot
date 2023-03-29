@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 import pickle
+import os
 from scipy import stats
 from bot.loan_user import LoanUser 
 from typing import Union, Tuple
@@ -14,12 +15,14 @@ class LoanPredictor(object):
     """
 
     # Default names for ML models
-    salary_model_filename: str = "salary_model.sav"
-    risk_model_filename: str = "risk_model.sav"
+    salary_model_filename: str = os.path.join('models', "salary_model.sav")
+    risk_model_filename: str = os.path.join('models', "risk_model.sav")
 
     # Encoders
-    risk_encoder: str = "risk_encoder.npy"
-    salary_encoder: str = "salary_encoder.npy"
+    risk_encoder: str = os.path.join('encoders', "risk_encoder.npy")
+    risk_pca_mean: str = os.path.join('encoders', "risk_pca_mean.sav")
+    salary_encoder: str = os.path.join('encoders', "salary_encoder.npy")
+
 
     def __init__(self, usr: LoanUser) -> None:
         """Default constructor for the predictor
@@ -67,7 +70,9 @@ class LoanPredictor(object):
         """Preprocessing. Change native country to binary classification (developed, developing)
         """
 
-        developed_countries: list = pd.read_csv("HDI.csv")
+        hdi_path = os.path.join('data', "HDI.csv")
+
+        developed_countries: list = pd.read_csv(hdi_path)
         developed_countries = developed_countries[developed_countries["hdi2019"] >= 0.8] # Drop developing countries
         developed_countries = (developed_countries["country"]).tolist() # Get a list of only developed countries
 
@@ -130,12 +135,9 @@ class LoanPredictor(object):
 
         risk_data[categorical_cols] = encoder.transform((risk_data[categorical_cols]).to_numpy().reshape(1, -1))
 
-        #zscored = stats.zscore(risk_data)
-        #print(zscored)
-
         pca = PCA()
-        pca.components_ = self.__load_model("risk_pca.sav")
-        pca.mean_ = self.__load_model("risk_pca_mean.sav")
+        pca.components_ = self.__load_model(self.risk_model_filename)
+        pca.mean_ = self.__load_model(self.risk_pca_mean)
         pca_data = pca.transform(risk_data)
 
         # Load Model

@@ -1,5 +1,6 @@
 import pdfplumber
 import re
+from pdfplumber.exceptions import PDFSyntaxError
 
 class LoanApplicationParser(object):
     """Object for parsing loan applications
@@ -32,8 +33,7 @@ class LoanApplicationParser(object):
 
             for page in pdf.pages:
                 text += page.extract_text()
-        except Exception:
-            
+        except (IOError, PDFSyntaxError):
             return ""
         finally:
             pdf.close()
@@ -67,12 +67,12 @@ class LoanApplicationParser(object):
             answer (str): user answer to be separated into multiple answers
 
         Returns:
-            list: of n separate answers
+            list: of n separate answers or empty list if impute is incorrect 
         """
 
         try:
             separated_answers = answer.split(",")
-        except:
+        except AttributeError:
             return []
 
         return separated_answers
@@ -110,7 +110,7 @@ class LoanApplicationParser(object):
                     else:
                         data[key] = answers[index]
                         index += 1
-        except Exception:
+        except KeyError:  # __separate_joint_question returned [] or wrong data
             raise ValueError() # If answer 1 formated incorrectly
                 
 

@@ -1,6 +1,7 @@
 import mysql.connector
 import pandas as pd
 import pymysql
+import sqlalchemy
 from sqlalchemy import create_engine
 from mysql.connector import Error
 
@@ -49,7 +50,7 @@ class LoanDatabase(object):
                     password = self.password,
                     database = db_name
                 )
-        except Error as err:
+        except mysql.connector.Error as err:
             raise Exception(f"Couldn't connect to the server. Please make sure that local MySQL server is set up properly and all credentials are correct. Error: {err}")
 
     def create_database(self) -> None:
@@ -61,7 +62,7 @@ class LoanDatabase(object):
         try:
             cursor = (self.connection).cursor(buffered = True)
             cursor.execute("CREATE DATABASE IF NOT EXISTS " + LoanDatabase.db_name)
-        except Error as err:
+        except mysql.connector.Error as err:
              raise Exception(f"Couldn't create database. Error: {err}")
 
     def create_engine(self) -> None:
@@ -77,7 +78,7 @@ class LoanDatabase(object):
         try:
             engine = create_engine(params)
             self.engine = engine
-        except Exception as ex:
+        except sqlalchemy.exc.OperationalError as ex:
             raise Exception(f"Couldn't create engine with parameters {params}: Error: {ex}")
 
 
@@ -93,8 +94,8 @@ class LoanDatabase(object):
             cursor = (self.connection).cursor(buffered = True)
             cursor.execute(query)
             (self.connection).commit()
-        except Error as err:
-            raise Exception(f"Couldn't execute this query '{query}'. Error: {err}")
+        except (mysql.connector.errors.ProgrammingError, mysql.connector.errors.IntegrityError) as err:
+            raise mysql.connector.Error(f"Couldn't execute this query '{query}'. Error: {err}")
 
     def read_query(self, query: str) -> str:
         """Read from MySQL Server. Used to fetch data from the server 
@@ -115,8 +116,8 @@ class LoanDatabase(object):
             read = cursor.fetchall()
 
             return read
-        except Error as err:
-            raise Exception(f"Couldn't read query '{query}'from the table. Error: {err}")
+        except (mysql.connector.errors.ProgrammingError, mysql.connector.errors.IntegrityError) as err:
+            raise mysql.connector.Error(f"Couldn't read query '{query}'from the table. Error: {err}")
 
 
 
