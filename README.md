@@ -9,7 +9,7 @@ The Loan Bot project represents a significant improvement over conventional loan
 ## Features
 
 - Interactive chat interface to guide the user through the loan application process
-- Custumized interest rate on a loan
+- Custom interest rate on a loan
 - MySQL database for storing user information and loan recommendations
 - Configurable sensitivity to default risk
 - User-friendly and intuitive design
