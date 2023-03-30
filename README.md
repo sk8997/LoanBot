@@ -35,7 +35,7 @@ To install the Loan Bot, please follow these steps:
 
 ## Configuring sensitivity 
 
-This model determines the most suitable interest rate by maximizing the expected gain, given by the expression $((1 - r) \beta + \alpha) - r \alpha$. Here, $r$ denotes the weighted probability of default, $\beta$ represents the interest rate, and $\alpha$ is the loan amount. The model ensures that $\beta \geq \frac{\alpha r}{1 - r}$. The individual probability of default $r$ is weighted with the average probability of default to account for the model's oversensitivity to $r$. The interest_normalization parameter in the `config.txt` file, which takes a value in the range of `(0, 1)`, determines the model's sensitivity and the ceiling for the interest rate value. A higher normalization rate leads to a less sensitive model. Please refer to the figure below to compare the impact of normalization on interest rates.
+This model determines the most suitable interest rate by maximizing the expected gain, given by the expression $((1 - r) \beta + \alpha) - r \alpha$. Here, $r$ denotes the weighted probability of default, $\beta$ represents the interest rate, and $\alpha$ is the loan amount. The model ensures that $\beta \geq \frac{\alpha r}{1 - r}$. The individual probability of default $r$ is weighted with the average probability of default to account for the model's oversensitivity to $r$. The `interest_normalization parameter` in the `config.txt` file, which takes a value in the range of `(0, 1)`, determines the model's sensitivity and the ceiling for the interest rate value. A higher normalization rate leads to a less sensitive model. Please refer to the figure below to compare the impact of normalization on interest rates.
 
 
 
