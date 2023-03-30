@@ -1,8 +1,57 @@
-This project seeks to streamline and optimize the loan application process, promoting greater efficiency and effectiveness. To this end, the Loan Bot leverages sophisticated machine learning algorithms to accurately predict an individual's income range and the likelihood of default on a given loan amount. These two key factors serve as critical determinants in establishing the most suitable interest rate for the user, ensuring a tailored and optimal borrowing experience. The Loan Bot's user-friendly interface and intuitive design serve to alleviate the often daunting nature of loan applications.
+# Loan Bot
 
-The significance of this project extends far beyond its immediate impact on loan application processes, and has wide-ranging implications for financial decision-making. By leveraging cutting-edge technology to accurately predict the most appropriate interest rate based on an individual's financial information, the Loan Bot outperforms traditional methods, yielding greater expected financial gains.
+Welcome to the Loan Bot project! This project is aimed at streamlining the loan application process by developing a bot that can interact with users, collect information from uploaded PDF files, and store it in a MySQL database. The bot employs advanced machine learning algorithms to predict a user's salary and risk of default on loan, enabling the most suitable loan amount recommendation.
 
-To illustrate our findings, we conducted a simulation of 100,000 risk values ranging from 0 to 1, sourced from a gamma distribution with K = 2 and mean = 0.07. Using the expected value of a binomial distribution (i.e., repeated trial with probability p), we calculated the potential financial loss. Conversely, we computed the potential gains based on the assigned interest rates derived from our model, as well as a flat 10% rate. The resulting outcomes are presented below for your consideration:
+## Description
+
+The Loan Bot project represents a significant improvement over conventional loan application methods. By utilizing advanced machine learning models, this method outperforms traditional methods in accurately predicting a user's salary and risk of default on loan, leading to a more customized and reliable loan amount recommendation. This innovative approach has the potential to revolutionize the loan application process and enhance financial decision-making.
+
+## Features
+
+- Interactive chat interface to guide the user through the loan application process
+- Machine learning models to predict a user's salary and risk of default on loan
+- MySQL database for storing user information and loan recommendations
+- User-friendly and intuitive design
+- Improved loan application process over traditional methods
+
+## Installation
+
+To install the Loan Bot project, please follow these steps:
+
+1. Clone the project repository
+
+git clone https://github.com/username/loan-bot.git
+
+2. Install the required packages
+
+pip install -r requirements.txt
+
+3. Run the app
+
+python app.py
+
+## Usage
+
+To use the Loan Bot, follow these steps:
+
+1. Upload a PDF file containing your financial information
+2. Answer questions and provide additional information as prompted by the chat interface
+3. The bot will use machine learning models to predict your salary and risk of default on loan, and recommend the most suitable loan amount
+
+## Contributing
+
+We welcome contributions to the Loan Bot project! To contribute, please follow these steps:
+
+1. Fork the project repository
+2. Create a new branch for your feature or bug fix
+3. Implement your changes
+4. Submit a pull request
+
+Please ensure that your contributions adhere to our coding standards and follow the guidelines for contributing.
+
+## License
+
+The Loan Bot project is licensed under the MIT license. Please see the `LICENSE` file for more details.
 
 
 <img src="https://user-images.githubusercontent.com/84877088/227412371-b60f6c21-bbb7-4a1a-a3c7-83f142f14b30.png" width=45% height=45% align="right"  alt="alt text">
@@ -12,4 +61,4 @@ To illustrate our findings, we conducted a simulation of 100,000 risk values ran
 
 
 
-We urge potential contributors to carefully review the project's documentation and adhere to the provided guidelines in order to ensure a productive and successful collaboration.
+
