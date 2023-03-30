@@ -4,19 +4,20 @@ Welcome to the Loan Bot project! This project is aimed at streamlining the loan 
 
 ## Description
 
-The Loan Bot project represents a significant improvement over conventional loan application methods. By utilizing advanced machine learning models, this method outperforms traditional methods in accurately predicting a user's salary and risk of default on loan, leading to a more customized and reliable loan amount recommendation. This innovative approach has the potential to revolutionize the loan application process and enhance financial decision-making.
+The Loan Bot project represents a significant improvement over conventional loan application methods. By utilizing machine learning models, this method outperforms traditional methods in accurately predicting user's isk of default on loan, leading to a more customized and reliable loan amount recommendation. This innovative approach has the potential to revolutionize the loan application process and enhance financial decision-making.
 
 ## Features
 
 - Interactive chat interface to guide the user through the loan application process
-- Machine learning models to predict a user's salary and risk of default on loan
+- Custumized interest rate on a loan
 - MySQL database for storing user information and loan recommendations
+- Configurable sensitivity to default risk
 - User-friendly and intuitive design
 - Improved loan application process over traditional methods
 
 ## Installation
 
-To install the Loan Bot project, please follow these steps:
+To install the Loan Bot, please follow these steps:
 
 1. Clone the project repository
 
@@ -26,17 +27,23 @@ To install the Loan Bot project, please follow these steps:
 
 ```pip install -r requirements.txt```
 
-3. Run the app
+3. Configure the bot by filling in the necessary information in the `config.txt` file, including the MySQL database information and bot token.
 
-```python app.py```
+4. Run the app
+
+```python main.py```
+
+## Configuring sensitivity 
+
+This model finds the most apparopriate interest rate by maximizing expected gain given by $$((1 - r) * \beta + \alpha) - r * \alpha$$
 
 ## Usage
 
 To use the Loan Bot, follow these steps:
 
-1. Upload a PDF file containing your financial information
+1. Upload a PDF file containing your financial information and demographic information
 2. Answer questions and provide additional information as prompted by the chat interface
-3. The bot will use machine learning models to predict your salary and risk of default on loan, and recommend the most suitable loan amount
+3. The bot will and recommend the most suitable interest rate
 
 ## Contributing
 
