@@ -20,15 +20,15 @@ To install the Loan Bot project, please follow these steps:
 
 1. Clone the project repository
 
-git clone https://github.com/username/loan-bot.git
+```git clone https://github.com/username/loan-bot.git```
 
 2. Install the required packages
 
-pip install -r requirements.txt
+```pip install -r requirements.txt```
 
 3. Run the app
 
-python app.py
+```python app.py```
 
 ## Usage
 
