@@ -1,10 +1,10 @@
 # Loan Bot
 
-Welcome to the Loan Bot project! This project is aimed at streamlining the loan application process by developing a bot that can interact with users, collect information from uploaded PDF files, and store it in a MySQL database. The bot employs advanced machine learning algorithms to predict a user's salary and risk of default on loan, enabling the most suitable loan amount recommendation.
+Welcome to the Loan Bot project! This project is aimed at streamlining the loan application process by developing a bot that can interact with users, collect information from uploaded PDF files, and store it in a MySQL database.
 
 ## Description
 
-The Loan Bot project represents a significant improvement over conventional loan application methods. By utilizing machine learning models, this method outperforms traditional methods in accurately predicting user's isk of default on loan, leading to a more customized and reliable loan amount recommendation. This innovative approach has the potential to revolutionize the loan application process and enhance financial decision-making.
+The Loan Bot project represents a significant improvement over conventional loan application methods. By utilizing machine learning models, this method outperforms traditional methods in accurately predicting user's risk of default on loan, leading to a more customized and reliable loan amount recommendation. This innovative approach has the potential to revolutionize the loan application process and enhance financial decision-making.
 
 ## Features
 
