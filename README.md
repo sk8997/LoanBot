@@ -39,7 +39,7 @@ This model determines the most suitable interest rate by maximizing the expected
 
 
 
-<img src="https://user-images.githubusercontent.com/84877088/229010916-62dba6d0-f71d-48df-bf76-74dcd679bae4.png" width=70% height=70% align="center"  alt="alt text">
+<img src="https://user-images.githubusercontent.com/84877088/229010916-62dba6d0-f71d-48df-bf76-74dcd679bae4.png" width=90% height=90% align="center"  alt="alt text">
 
 ## Usage
 
