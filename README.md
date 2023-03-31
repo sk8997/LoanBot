@@ -39,7 +39,7 @@ This model determines the most suitable interest rate by maximizing the expected
 
 
 
-<img src="https://user-images.githubusercontent.com/84877088/229007143-a7dce431-0be7-46cb-951d-9e3f559e85aa.png" width=45% height=45% align="center"  alt="alt text">
+<img src="https://user-images.githubusercontent.com/84877088/229010916-62dba6d0-f71d-48df-bf76-74dcd679bae4.png" width=45% height=45% align="center"  alt="alt text">
 
 ## Usage
 
@@ -67,6 +67,7 @@ The Loan Bot project is licensed under the MIT license. Please see the `LICENSE`
 
 <img src="https://user-images.githubusercontent.com/84877088/227412371-b60f6c21-bbb7-4a1a-a3c7-83f142f14b30.png" width=45% height=45% align="right"  alt="alt text">
 
+![norm](https://user-images.githubusercontent.com/84877088/229010916-62dba6d0-f71d-48df-bf76-74dcd679bae4.png)
 
 
 
