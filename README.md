@@ -62,7 +62,7 @@ Please ensure that your contributions adhere to our coding standards and follow 
 
 ## License
 
-The Loan Bot project is licensed under the MIT license. Please see the `LICENSE` file for more details.
+The Loan Bot project is licensed under GNU General Public License v3.0. Please see the `LICENSE` file for more details.
 
 
 
