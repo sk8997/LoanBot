@@ -45,6 +45,7 @@ This model determines the most suitable interest rate by maximizing the expected
 
 To use the Loan Bot, follow these steps:
 
+1. Start application process with `/apply` command
 1. Upload a PDF file containing your financial information and demographic information
 2. Answer questions and provide additional information as prompted by the chat interface
 3. The bot will and recommend the most suitable interest rate
