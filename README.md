@@ -1,6 +1,6 @@
 # Loan Bot
 
-Welcome to the Loan Bot project! This project is aimed at streamlining the loan application process by developing a bot that can engage with users, extract relevant data from PDF documents, and archive it in a secure database.
+Welcome to the Loan Bot project! This project is aimed at streamlining the loan application process by developing a bot that can engage with users, extract relevant data from PDF documents, and archive it in MySQL database.
 
 ## Description
 
