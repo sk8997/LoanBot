@@ -39,7 +39,7 @@ class LoanPredictor(object):
 
         self.__clean_data()
 
-    def __load_model(self, file_name: str) -> object:
+    def _load_model(self, file_name: str) -> object:
         """Loads ML model from a file
 
         Args:
@@ -52,7 +52,7 @@ class LoanPredictor(object):
         return pickle.load(open(file_name, "rb"))
 
 
-    def __separate_data(self) -> Tuple[pd.DataFrame, None]:
+    def _separate_data(self) -> Tuple[pd.DataFrame, None]:
         """Separates entire user dataframe into feature subset relevant to salary prediction model
         Returns:
             Tuple[pd.DataFrame, None]: returns either a dataframe with features relevant for salary prediction model or None if fails tp slice user data
@@ -66,7 +66,7 @@ class LoanPredictor(object):
         return salary_data
 
 
-    def __change_country_to_binary(self) -> None:
+    def _change_country_to_binary(self) -> None:
         """Preprocessing. Change native country to binary classification (developed, developing)
         """
 
@@ -81,7 +81,7 @@ class LoanPredictor(object):
         else:
             self.usr.user_data.loc[0, "native_country"] = "developing"
 
-    def __clean_data(self) -> None:
+    def _clean_data(self) -> None:
         """Wrapper method. Perfoms all nessesary data cleaning operations 
         """
 
@@ -89,7 +89,7 @@ class LoanPredictor(object):
 
         self.salary_data = self.__separate_data()
 
-    def __predict_salary(self) -> None:
+    def _predict_salary(self) -> None:
         """Predicts whether user salary is above $50K a year and pushes results to dataframe
         """
 
@@ -148,7 +148,7 @@ class LoanPredictor(object):
 
         return predicted_risk[0, 1]
 
-    def __to_percent(self, interest: float, loan_amount: float) -> int:
+    def _to_percent(self, interest: float, loan_amount: float) -> int:
         """Transform interest amount to percentage of original loan amount
 
         Args:

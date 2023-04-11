@@ -1,32 +1,8 @@
 import pandas as pd
 from bot.loan_database import *
 
-class Person(object):
-    """
-    Parent class for the 'User' class. 
-    
-    """
 
-    person_number: int = 0 # How many unique users are instantiated
-
-
-    def __init__(self, name: str, age: int) -> None:
-        """Instantiate User Object with basic demographic data
-
-        Args:
-            name (str): name of the user
-            age (int): age of the user
-            gender (str): biological gender of the user. M/F
-            race (str): race of the user
-        """
-
-        self.name = name
-        self.age = age
-
-        Person.person_number += 1
-
-
-class LoanUser(Person):
+class LoanUser:
     """
     This class holds key user data. It genarates unique user ID and stores a connection of user to the relevant entry in database.
 
@@ -43,8 +19,9 @@ class LoanUser(Person):
             ]
 
 
-    def __init__(self, name: str = None, age: int = None) -> None:
-        super().__init__(name, age)
+    def _init__(self, name: str = None, age: int = None) -> None:
+        self.name = name
+        self.age = age
 
         # Create user dataframe
         self.__generate_user_dataframe()
@@ -58,12 +35,6 @@ class LoanUser(Person):
         # Set interaction stage to zero. See more...
 
         self.stage: int = 0
-
-
-    def __default_user(self):
-        """Instantiate user with default data values.
-        """
-        (self.user_data).loc[0] = ["123234", "John", 23, "Male", "employed", "Private", "HS-grad", 0, "Sales", "White", "12","Peru", "1", "RENT", "C", 444, "N", None, None, None]
 
 
     def is_valid_age(age: int) -> bool:
@@ -81,7 +52,7 @@ class LoanUser(Person):
             return False
         return valid
 
-    def __generate_user_dataframe(self) -> None:
+    def _generate_user_dataframe(self) -> None:
         """
         Create an empty pandas dataframe associated with this user
 
@@ -94,7 +65,7 @@ class LoanUser(Person):
         self.stage += 1
         
 
-    def __is_in_table(self, db: LoanDatabase) -> bool:
+    def _is_in_table(self, db: LoanDatabase) -> bool:
         """Determines whether an entry already exists for this user. Checks for unique user id in loan table
 
         Args:

@@ -48,7 +48,7 @@ class LoanBot(commands.Bot):
         async def on_ready() -> None:
             print("Bot is now online")
 
-    def __set_db(self, hostname, username, password) -> None:
+    def _set_db(self, hostname, username, password) -> None:
 
         self.db_username = username
         self.db_hostname = hostname
@@ -56,7 +56,7 @@ class LoanBot(commands.Bot):
 
         self.db = LoanDatabase(self.db_username, self.db_hostname, self.db_password)
 
-
+    @staticmethod
     def is_name(name: str) -> bool:
         """Checks whether a string corresponds to a name of an individual. Such names should not include most special characters such as ($,%,& etc) and numbers
 
@@ -112,7 +112,7 @@ class LoanBot(commands.Bot):
         else:
             await message.channel.send("Sorry, I don't think this is a valid amount. Please make sure that you enter a valid number without '$'")
 
-    def __get_info_message(self, usr_data: dict) -> str:
+    def _get_info_message(self, usr_data: dict) -> str:
         """Generates a string equivalent of a dictionary with user data in it
 
         Args:
@@ -202,22 +202,18 @@ class LoanBot(commands.Bot):
         """
 
         stage = usr.stage
-        
-        if (stage == 0):  # Get name
 
-            await self.get_stage_zero(message, usr)
+        stage_mapping = {
+            0: self.get_stage_zero,
+            1: self.get_stage_one,
+            2: self.get_stage_two,
+            3: self.get_stage_three
+        }
 
-        elif (stage == 1):   # Get loan amount and send empty pdf
-            
-            await self.get_stage_one(message, usr)
-        
-        elif (stage == 2):  # Read user application
-
-            await self.get_stage_two(message, usr)
-
-        elif (stage == 3):  # Get age
-
-            await self.get_stage_three(message, usr)
+        if stage in stage_mapping:
+            await stage_mapping[stage](message, usr)
+        else:
+            raise ValueError(f"Incorrect Stage Has Been Passed: Stage: {stage}")
 
               
     def init_user(self, usr: LoanUser) -> None:

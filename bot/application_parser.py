@@ -1,6 +1,9 @@
 import pdfplumber
 import re
-from pdfplumber.exceptions import PDFSyntaxError
+
+##  Exceptions
+class PDFSyntaxError(Exception):
+    pass
 
 class LoanApplicationParser(object):
     """Object for parsing loan applications
@@ -40,7 +43,7 @@ class LoanApplicationParser(object):
 
         return text
 
-    def __get_race_and_sex(self, data: dict, application: str) -> None:
+    def _get_race_and_sex(self, data: dict, application: str) -> None:
         """Extract user race and gender from the pdf application
 
         Args:
@@ -49,18 +52,18 @@ class LoanApplicationParser(object):
         """
 
         # Find Race field and extract user answer
-        race: str = re.findall("Race:\s*[a-zA-Z]*\s*\n*", application)[0]
+        race: str = re.findall(r"Race:\s*[a-zA-Z]*\s*\n*", application)[0]
         race = race.replace("Race: ", "")
 
         data["race"] = race.strip() # Push to dictionary
 
         # Find Sex field and extract user answer
-        sex: str = re.findall("Sex:\s*[a-zA-Z]*\s*\n*", application)[0]
+        sex: str = re.findall(r"Sex:\s*[a-zA-Z]*\s*\n*", application)[0]
         sex = sex.replace("Sex: ", "")
 
         data["sex"] = sex.strip() # Push to dictionary
 
-    def __separate_joint_question(answer: str) -> list:
+    def _separate_joint_question(answer: str) -> list:
         """Separates joint questions like question 2 which includes answer to 3 datafields 
 
         Args:
@@ -79,7 +82,7 @@ class LoanApplicationParser(object):
 
         
 
-    def __push_answers(self, data: dict, answers: list) -> None:
+    def _push_answers(self, data: dict, answers: list) -> None:
         """Go over all answers extracted from user application to push them to corresponding keys in dictionary
 
         Args:
@@ -115,7 +118,7 @@ class LoanApplicationParser(object):
                 
 
 
-    def __get_answers(self, data: dict, application: str) -> None:
+    def _get_answers(self, data: dict, application: str) -> None:
         """Extract answers to question in loan application pdf
 
         Args:
@@ -124,7 +127,7 @@ class LoanApplicationParser(object):
         """
 
         # Match all fields with "Asnwer: " in it
-        answers: list = re.findall("^Answer:\s*[a-zA-Z/\s0-9,]+\s*\n*$", application, flags = re.M|re.I)
+        answers: list = re.findall(r"^Answer:\s*[a-zA-Z/\s0-9,]+\s*\n*$", application, flags = re.M|re.I)
         
         # Extract user answer from matched lines
         for i in range(0, len(answers)):

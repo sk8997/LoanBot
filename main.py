@@ -2,6 +2,7 @@ import configparser
 import sys
 
 from bot.loan_bot import LoanBot
+from typing import Dict, Tuple
 
 
 def main():
@@ -12,7 +13,7 @@ def main():
         token, configs = get_configs(config)
     except configparser.NoOptionError:
         print("One of the keys does not exist. Please make sure that config.txt file retains its original lines")
-        sys.exit(1)
+        raise SystemExit(1)
     except ValueError as err:
         print(f"Please make sure to provide all nessesary configurations. Error: {err}")
         sys.exit(1)
@@ -21,7 +22,7 @@ def main():
     loan_bot.run(token)
     
 
-def get_configs(parser: configparser.ConfigParser):
+def get_configs(parser: configparser.ConfigParser) -> Tuple[str, Dict[str, str]]:
 
     # Read the config file
     parser.read("config.txt")
