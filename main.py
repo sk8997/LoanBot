@@ -44,5 +44,5 @@ def get_configs(parser: configparser.ConfigParser) -> Tuple[str, Dict[str, str]]
     return token, configs
 
 
-
-main()
+if __name__ == "__main__":
+    main()
