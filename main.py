@@ -16,7 +16,7 @@ def main():
         raise SystemExit(1)
     except ValueError as err:
         print(f"Please make sure to provide all nessesary configurations. Error: {err}")
-        sys.exit(1)
+        raise SystemExit(1)
 
     loan_bot = LoanBot(**configs)
     loan_bot.run(token)

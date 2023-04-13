@@ -276,31 +276,7 @@ auc = roc_auc_score(y_test, predictions)
 
 
 
-# %%
 
-"""
-5) Report
-
-    
-    
-...
-
-
-
-
-Random forest calssification shows good results. The reported precision and recall
-are 61% and 60% respectively. The correspoding F1 score is 0.63 and the total
-accuracy is 0.84. Given that this dataset was unbalansed these results can be 
-considered satisfactory. The 84% accuracy also suggests that the model is
-unbiased. Confusion matrix shows that both false positive and false negative 
-rates are extrimely low. Please note that low frequency of correct prediction 
-on the CM heatmap is also due to the fact that the dataset is unbalannced. Overall
-the model shows satisfactory performance.
-
-Other considerations: As shown in EDA, a lion share of varibales are unbalansed 
-this will likely make the model less accurate for low-occuring values in the 
-training set. Moreover, the mode of the capital-gains varibale is zero and this
-data is not readily avalobale in a real-world applications.  
     
     
 
@@ -322,6 +298,5 @@ data is not readily avalobale in a real-world applications.
     
     
     
-    
-"""
+
 
